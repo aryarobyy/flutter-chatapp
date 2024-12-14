@@ -1,8 +1,11 @@
 import 'package:chat_app/component/button.dart';
+import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/component/text_field.dart';
-import 'package:chat_app/service/auth/auth_service.dart';
+import 'package:chat_app/pages/home.dart';
+import 'package:chat_app/service/google_auth/google_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
+import 'package:chat_app/service/auth/authentication.dart';
 
 class Login extends StatefulWidget {
   final void Function()? onTap;
@@ -14,24 +17,39 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+  }
 
   void signIn() async {
-    final authService = Provider.of<AuthService>(context, listen: false);
+    setState(() {
+      isLoading = true;
+    });
 
-    try {
-      await authService.signInWithEmailAndPassword(
-          emailController.text, passwordController.text);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString(),
-          ),
+    String res = await AuthMethod().loginUser(
+        email: emailController.text, password: passwordController.text);
+    if (res == "success") {
+      setState(() {
+        isLoading = false;
+      });
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const Home(),
         ),
       );
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
+    showSnackBar(context, res);
   }
 
   @override
@@ -99,10 +117,7 @@ class _LoginState extends State<Login> {
                   SizedBox(
                     height: 40,
                   ),
-                  MyButton(
-                      onPressed: signIn,
-                      text: "Login"
-                  ),
+                  MyButton(onPressed: signIn, text: "Login"),
                   SizedBox(
                     height: 20,
                   ),
@@ -110,8 +125,41 @@ class _LoginState extends State<Login> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text("dont have an account?"),
-                      InkWell(onTap: widget.onTap, child: const Text("Click"))
+                      InkWell(onTap: widget.onTap, child: const Text("Click")),
                     ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 10),
+                    child: ElevatedButton(
+                        style:
+                        ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueGrey),
+                        onPressed: () async {
+                          await FireBaseServices().signInwithGoogle();
+                          Navigator.pushReplacement(
+                              context, MaterialPageRoute(
+                              builder: (context) => const Home(),
+                            )
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Image.network("https://ouch-cdn2.icons8.com/VGHyfDgzIiyEwg3RIll1nYupfj653vnEPRLr0AeoJ8g/rs:fit:456:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9wbmcvODg2/LzRjNzU2YThjLTQx/MjgtNGZlZS04MDNl/LTAwMTM0YzEwOTMy/Ny5wbmc.png",
+                                height: 35,
+                              ),
+                            ),
+                            const SizedBox(width: 10,),
+                            const Text(
+                              "Continue with google",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          ],
+                        )),
                   )
                 ],
               ),
