@@ -34,23 +34,27 @@ class _LoginState extends State<Login> {
     });
 
     String res = await AuthMethod().loginUser(
-        email: emailController.text, password: passwordController.text);
-    if (res == "success") {
-      setState(() {
-        isLoading = false;
-      });
+      email: emailController.text,
+      password: passwordController.text,
+    );
+
+    setState(() {
+      isLoading = false;
+    });
+
+    if (res.toLowerCase() == "success") {
+      showSnackBar(context, "Login berhasil!");
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const Home(),
         ),
       );
     } else {
-      setState(() {
-        isLoading = false;
-      });
+      showSnackBar(context, res);
     }
-    showSnackBar(context, res);
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +114,8 @@ class _LoginState extends State<Login> {
                         child: MyTextField(
                             controller: passwordController,
                             hintText: "Password",
-                            obscureText: true),
+                            obscureText: true
+                        ),
                       ),
                     ],
                   ),
@@ -129,38 +134,41 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 25, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                     child: ElevatedButton(
-                        style:
-                        ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey),
-                        onPressed: () async {
-                          await FireBaseServices().signInwithGoogle();
-                          Navigator.pushReplacement(
-                              context, MaterialPageRoute(
-                              builder: (context) => const Home(),
-                            )
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Image.network("https://ouch-cdn2.icons8.com/VGHyfDgzIiyEwg3RIll1nYupfj653vnEPRLr0AeoJ8g/rs:fit:456:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9wbmcvODg2/LzRjNzU2YThjLTQx/MjgtNGZlZS04MDNl/LTAwMTM0YzEwOTMy/Ny5wbmc.png",
-                                height: 35,
-                              ),
+                      style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                      onPressed: () async {
+                        await FirebaseServices().signInWithGoogle();
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Home(),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Image.network(
+                              "https://ouch-cdn2.icons8.com/VGHyfDgzIiyEwg3RIll1nYupfj653vnEPRLr0AeoJ8g/rs:fit:456:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9wbmcvODg2/LzRjNzU2YThjLTQx/MjgtNGZlZS04MDNl/LTAwMTM0YzEwOTMy/Ny5wbmc.png",
+                              height: 35,
                             ),
-                            const SizedBox(width: 10,),
-                            const Text(
-                              "Continue with google",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          ],
-                        )),
-                  )
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            "Continue with Google",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],

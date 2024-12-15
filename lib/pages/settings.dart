@@ -15,7 +15,7 @@ class Settings extends StatelessWidget {
         child: Center(
           child:  ElevatedButton(
               onPressed: () async {
-                await FireBaseServices().googleSignOut();
+                await FirebaseServices().googleSignOut();
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                     builder: (context) => const LoginOrRegister(),

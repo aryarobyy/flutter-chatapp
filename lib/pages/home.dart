@@ -1,8 +1,6 @@
 import 'package:chat_app/pages/contact.dart';
 import 'package:chat_app/pages/dashboard.dart';
 import 'package:chat_app/pages/settings.dart';
-import 'package:chat_app/service/auth/login_or_register.dart';
-import 'package:chat_app/service/google_auth/google_auth.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
