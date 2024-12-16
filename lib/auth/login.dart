@@ -2,8 +2,10 @@ import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
 import 'package:chat_app/pages/home.dart';
-import 'package:chat_app/service/google_auth/google_auth.dart';
+import 'package:chat_app/service/google_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:chat_app/service/navigation_service.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:chat_app/service/auth/authentication.dart';
 
@@ -19,6 +21,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  late NavigationService _navigation;
   bool isLoading = false;
 
   @override
@@ -44,11 +47,7 @@ class _LoginState extends State<Login> {
 
     if (res.toLowerCase() == "success") {
       showSnackBar(context, "Login berhasil!");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const Home(),
-        ),
-      );
+      _navigation.navigateToRoute('/home');
     } else {
       showSnackBar(context, res);
     }
@@ -58,6 +57,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    _navigation = GetIt.instance.get<NavigationService>();
     return Scaffold(
       body: SafeArea(
         child: Padding(

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Person extends StatelessWidget {
-  const Person({super.key});
+class ChatList extends StatelessWidget {
+  const ChatList({super.key});
 
   @override
   Widget build(BuildContext context) {
     final List<Map<String, String>> users = [
       {
+        "uid": "1",
         "name": "Alice",
         "lastOnline": "5 minutes ago",
         "lastMessage": "Hi, how are you?",
@@ -14,6 +15,7 @@ class Person extends StatelessWidget {
         "profilePic": "assets/images/user1.jpg",
       },
       {
+        "uid": "2",
         "name": "Bob",
         "lastOnline": "10 minutes ago",
         "lastMessage": "See you soon!",
@@ -21,6 +23,7 @@ class Person extends StatelessWidget {
         "profilePic": "assets/images/user2.jpg",
       },
       {
+        "uid": "3",
         "name": "Charlie",
         "lastOnline": "30 minutes ago",
         "lastMessage": "Let's catch up later.",
@@ -28,6 +31,7 @@ class Person extends StatelessWidget {
         "profilePic": "assets/images/user3.jpg",
       },
       {
+        "uid": "4",
         "name": "Diana",
         "lastOnline": "1 hour ago",
         "lastMessage": "Call me when free.",
@@ -35,6 +39,7 @@ class Person extends StatelessWidget {
         "profilePic": "assets/images/user4.jpg",
       },
       {
+        "uid": "5",
         "name": "Eve",
         "lastOnline": "2 hours ago",
         "lastMessage": "Got your message!",

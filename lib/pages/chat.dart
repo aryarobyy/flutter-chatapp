@@ -1,5 +1,5 @@
 import 'package:chat_app/widget/bubble_chat.dart';
-import 'package:chat_app/widget/person.dart';
+import 'package:chat_app/widget/chat_list.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {
@@ -11,8 +11,8 @@ class Chat extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Container(
         padding: EdgeInsets.all(20),
-          child: Person()
-        )
+          child: Text("Halo"),
+      )
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 40),

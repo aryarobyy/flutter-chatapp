@@ -1,4 +1,4 @@
-import 'package:chat_app/widget/person.dart';
+import 'package:chat_app/widget/chat_list.dart';
 import 'package:flutter/material.dart';
 
 class Contact extends StatelessWidget {
@@ -11,9 +11,6 @@ class Contact extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Person(),
-            Person(),
-            Person()
           ],
         ),
       ),
