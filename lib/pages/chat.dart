@@ -1,5 +1,5 @@
-import 'package:chat_app/component/bubble_chat.dart';
-import 'package:chat_app/component/person.dart';
+import 'package:chat_app/widget/bubble_chat.dart';
+import 'package:chat_app/widget/person.dart';
 import 'package:flutter/material.dart';
 
 class Chat extends StatelessWidget {

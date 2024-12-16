@@ -5,45 +5,77 @@ class Person extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.blue),
-          left: BorderSide(color: Colors.black),
-          right: BorderSide(),
-          bottom: BorderSide(),
-        ),
+    final List<Map<String, String>> users = [
+      {
+        "name": "Alice",
+        "lastOnline": "5 minutes ago",
+        "lastMessage": "Hi, how are you?",
+        "time": "21:02",
+        "profilePic": "assets/images/user1.jpg",
+      },
+      {
+        "name": "Bob",
+        "lastOnline": "10 minutes ago",
+        "lastMessage": "See you soon!",
+        "time": "20:51",
+        "profilePic": "assets/images/user2.jpg",
+      },
+      {
+        "name": "Charlie",
+        "lastOnline": "30 minutes ago",
+        "lastMessage": "Let's catch up later.",
+        "time": "20:35",
+        "profilePic": "assets/images/user3.jpg",
+      },
+      {
+        "name": "Diana",
+        "lastOnline": "1 hour ago",
+        "lastMessage": "Call me when free.",
+        "time": "19:20",
+        "profilePic": "assets/images/user4.jpg",
+      },
+      {
+        "name": "Eve",
+        "lastOnline": "2 hours ago",
+        "lastMessage": "Got your message!",
+        "time": "18:15",
+        "profilePic": "assets/images/user5.jpg",
+      },
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Chats"),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_2_outlined,
-            size: 80,
-          ),
-          const SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Text(
-                "Nama",
-                style: TextStyle(
-                  fontSize: 25,
-                ),
+      body: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index) {
+          final user = users[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: AssetImage(user["profilePic"]!),
+              radius: 28,
+            ),
+            title: Text(
+              user["name"]!,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
-              SizedBox(height: 8),
-              Text(
-                "Lastchat",
-                style: TextStyle(
-                  fontSize: 17,
-                ),
+            ),
+            subtitle: Text(
+              user["lastMessage"] ?? "",
+              style: const TextStyle(color: Colors.grey),
+            ),
+            trailing: Text(
+              user["time"] ?? "",
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
               ),
-            ],
-          ),
-        ],
+            ),
+          );
+        },
       ),
     );
   }

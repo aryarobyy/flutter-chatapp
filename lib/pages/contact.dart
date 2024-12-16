@@ -1,4 +1,4 @@
-import 'package:chat_app/component/person.dart';
+import 'package:chat_app/widget/person.dart';
 import 'package:flutter/material.dart';
 
 class Contact extends StatelessWidget {
@@ -13,6 +13,7 @@ class Contact extends StatelessWidget {
           children: [
             Person(),
             Person(),
+            Person()
           ],
         ),
       ),
