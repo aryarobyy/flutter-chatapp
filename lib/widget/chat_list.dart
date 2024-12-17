@@ -1,7 +1,16 @@
+import 'package:chat_app/service/navigation_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
-class ChatList extends StatelessWidget {
+class ChatList extends StatefulWidget {
   const ChatList({super.key});
+
+  @override
+  State<ChatList> createState() => _ChatListState();
+}
+
+class _ChatListState extends State<ChatList> {
+  late NavigationService _navigation;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +57,9 @@ class ChatList extends StatelessWidget {
       },
     ];
 
+    _navigation = GetIt.instance.get<NavigationService>();
     return Scaffold(
+
       appBar: AppBar(
         title: const Text("Chats"),
       ),
@@ -56,27 +67,37 @@ class ChatList extends StatelessWidget {
         itemCount: users.length,
         itemBuilder: (context, index) {
           final user = users[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: AssetImage(user["profilePic"]!),
-              radius: 28,
-            ),
-            title: Text(
-              user["name"]!,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+          return InkWell(
+            onTap: () {
+              // _navigation.navigateToRoute('/chat/id');
+            },
+            child: ListTile(
+              leading: InkWell(
+                onTap: () {
+                  // _navigation.navigateToRoute('/user/uid');
+                },
+                child: CircleAvatar(
+                  backgroundImage: AssetImage(user["profilePic"]!),
+                  radius: 28,
+                ),
               ),
-            ),
-            subtitle: Text(
-              user["lastMessage"] ?? "",
-              style: const TextStyle(color: Colors.grey),
-            ),
-            trailing: Text(
-              user["time"] ?? "",
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+              title: Text(
+                user["name"]!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              subtitle: Text(
+                user["lastMessage"] ?? "",
+                style: const TextStyle(color: Colors.grey),
+              ),
+              trailing: Text(
+                user["time"] ?? "",
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
               ),
             ),
           );

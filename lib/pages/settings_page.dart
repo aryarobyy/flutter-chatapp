@@ -1,3 +1,4 @@
+import 'package:chat_app/pages/profile_page.dart';
 import 'package:chat_app/service/auth/login_or_register.dart';
 import 'package:chat_app/service/google_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,18 +20,22 @@ class _SettingsState extends State<Settings> {
     _navigation = GetIt.instance.get<NavigationService>();
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Settings"),
+            ElevatedButton(
+                onPressed: () async {
+                  await FirebaseServices().googleSignOut();
+                  _navigation.navigateToRoute('/auth');
+                },
+                child: Text("Log Out")
+            ),
+          ],
+        ),
       ),
       body: SafeArea(
-        child: Center(
-          child:  ElevatedButton(
-              onPressed: () async {
-                await FirebaseServices().googleSignOut();
-                _navigation.navigateToRoute('/auth');
-              },
-              child: Text("Log Out")
-          ),
-        ),
+        child: Profile(),
       ),
     );
   }

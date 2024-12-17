@@ -1,6 +1,6 @@
-import 'package:chat_app/pages/contact.dart';
-import 'package:chat_app/pages/dashboard.dart';
-import 'package:chat_app/pages/settings.dart';
+import 'package:chat_app/pages/contact_page.dart';
+import 'package:chat_app/pages/dashboard_page.dart';
+import 'package:chat_app/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {

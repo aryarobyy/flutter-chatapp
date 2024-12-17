@@ -11,6 +11,7 @@ class Contact extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
+
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
-import 'package:chat_app/pages/home.dart';
+import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/service/google_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/service/navigation_service.dart';
@@ -52,8 +52,6 @@ class _LoginState extends State<Login> {
       showSnackBar(context, res);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +112,7 @@ class _LoginState extends State<Login> {
                         child: MyTextField(
                             controller: passwordController,
                             hintText: "Password",
-                            obscureText: true
-                        ),
+                            obscureText: true),
                       ),
                     ],
                   ),
@@ -134,10 +131,11 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25, vertical: 10),
                     child: ElevatedButton(
-                      style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey),
                       onPressed: () async {
                         await FirebaseServices().signInWithGoogle();
                         Navigator.pushReplacement(
