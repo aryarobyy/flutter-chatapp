@@ -5,10 +5,11 @@ class FirebaseServices {
   final auth = FirebaseAuth.instance;
   final googleSignIn = GoogleSignIn();
 
-  signInWithGoogle() async {
+  Future<bool> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
+
       if(googleSignInAccount != null){
         final GoogleSignInAuthentication googleSignInAuthentication =
             await googleSignInAccount.authentication;
@@ -17,10 +18,17 @@ class FirebaseServices {
           idToken: googleSignInAuthentication.idToken,
         );
         await auth.signInWithCredential(authCredential);
+        if (auth.currentUser != null) {
+          print("Google Sign-In successful: ${auth.currentUser!.email}");
+          return true;
+        } else {
+          print("Google Sign-In failed: User is null");
+        }
       }
     } on FirebaseAuthException catch (e) {
       print(e.toString());
     }
+    return false;
   }
 
   googleSignOut() async {

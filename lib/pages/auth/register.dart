@@ -1,5 +1,6 @@
 
 import 'package:chat_app/service/auth/auth_gate.dart';
+import 'package:chat_app/service/navigation_service.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
@@ -24,6 +25,7 @@ class _RegisterState extends State<Register> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
+  late NavigationService _navigation;
   bool isLoading = false;
 
   @override
@@ -67,11 +69,8 @@ class _RegisterState extends State<Register> {
 
       if (res == "success") {
         showSnackBar(context, "Account created successfully");
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const AuthGate(),
-          ),
-        );
+        showSnackBar(context, "Login berhasil!");
+        _navigation.navigateToRoute('/home');
       } else {
         logger.d("Registration failed: $res");
         showSnackBar(context, res);

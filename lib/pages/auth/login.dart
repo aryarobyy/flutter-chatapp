@@ -46,7 +46,7 @@ class _LoginState extends State<Login> {
     });
 
     if (res.toLowerCase() == "success") {
-      showSnackBar(context, "Login berhasil!");
+      showSnackBar(context, "Login Successful!");
       _navigation.navigateToRoute('/home');
     } else {
       showSnackBar(context, res);
@@ -137,13 +137,12 @@ class _LoginState extends State<Login> {
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey),
                       onPressed: () async {
-                        await FirebaseServices().signInWithGoogle();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Home(),
-                          ),
-                        );
+                        bool isSignedIn = await FirebaseServices().signInWithGoogle();
+                        if (isSignedIn) {
+                          _navigation.navigateToRoute('/home');
+                        } else {
+                          showSnackBar(context,"Sign-In failed. Navigation to home page aborted.");
+                        }
                       },
                       child: Row(
                         children: [
