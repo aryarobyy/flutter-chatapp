@@ -25,7 +25,7 @@ class _RegisterState extends State<Register> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
-  late NavigationService _navigation;
+  late NavigationService _navigation = NavigationService(); // Declare _navigation
   bool isLoading = false;
 
   @override
@@ -68,9 +68,9 @@ class _RegisterState extends State<Register> {
       });
 
       if (res == "success") {
+        Navigator.of(context).pushNamed('/home');
         showSnackBar(context, "Account created successfully");
-        showSnackBar(context, "Login berhasil!");
-        _navigation.navigateToRoute('/home');
+        print("Response $res");
       } else {
         logger.d("Registration failed: $res");
         showSnackBar(context, res);

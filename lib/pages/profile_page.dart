@@ -1,5 +1,6 @@
 import 'package:chat_app/service/images_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_app/service/storage_service.dart';
 
@@ -79,7 +80,8 @@ class _ProfileState extends State<Profile> {
                             // await Provider.of<StorageService>(context,
                             //     listen: false)
                             //     .uploadImage(context);
-                            await _imagesService.uploadImageToFirestore(context);
+                            _imagesService.uploadImageToFirestore(context);
+                            // await _imagesService.uploadMetadata();
                           },
                           icon: Icon(
                             Icons.camera_alt_outlined,
@@ -111,4 +113,6 @@ class _ProfileState extends State<Profile> {
       },
     );
   }
+
+
 }
