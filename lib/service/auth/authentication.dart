@@ -47,7 +47,6 @@ class AuthMethod {
 
       final userData = {
         'name': name,
-        'userId': uuid,
         'email': email,
         'createdAt': FieldValue.serverTimestamp(),
         'image': img_url ?? "",
@@ -166,25 +165,13 @@ class AuthMethod {
         throw Exception("No user is currently logged in");
       }
 
-      final querySnapshot = await _fireStore
-          .collection(USER_COLLECTION)
-          .where('email', isEqualTo: user.email)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
-        return userData['userId'] ?? "";
-        // final userData = querySnapshot.docs.first.data();
-        // return userData['userId'] as String?;
-      } else {
-        throw Exception("UserId not found in Firestore");
-      }
+      return user.uid;
     } catch (e) {
       log("Error in getCurrentUserId: $e");
       rethrow;
     }
   }
+
 
 
   Stream<QuerySnapshot> getUserProfile() {

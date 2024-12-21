@@ -20,23 +20,6 @@ class _ChatScreenState extends State<ChatPage> {
   final ChatService _chatService = ChatService();
   final AuthMethod _auth = AuthMethod();
 
-  String? currentUserId;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCurrentUser();
-  }
-
-  Future<void> _initializeCurrentUser() async {
-    try {
-      currentUserId = await _auth.getCurrentUserId();
-      setState(() {});
-    } catch (e) {
-      debugPrint("Error fetching current user ID: $e");
-    }
-  }
-
   @override
   void dispose() {
     messageController.dispose();
@@ -52,49 +35,68 @@ class _ChatScreenState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (currentUserId == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Chat"),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Chat"),
-      ),
-      body: Column(
-        children: [
-          Expanded(child: _bubbleChat(context)),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: MyTextField(
-                    controller: messageController,
-                    hintText: "Type a message...",
-                    obscureText: false,
-                  ),
-                ),
-                IconButton(
-                  onPressed: handleSendChat,
-                  icon: const Icon(Icons.send),
-                ),
-              ],
+    return FutureBuilder<String>(
+      future: _auth.getCurrentUserId(), // Langsung gunakan userId dari Firebase Authentication
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Chat"),
             ),
+            body: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Chat"),
+            ),
+            body: const Center(
+              child: Text("Error fetching user information"),
+            ),
+          );
+        }
+
+        final currentUserId = snapshot.data!;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Chat"),
           ),
-        ],
-      ),
+          body: Column(
+            children: [
+              Expanded(child: _bubbleChat(context, currentUserId)),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: MyTextField(
+                        controller: messageController,
+                        hintText: "Type a message...",
+                        obscureText: false,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: handleSendChat,
+                      icon: const Icon(Icons.send),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _bubbleChat(BuildContext context) {
+  Widget _bubbleChat(BuildContext context, String currentUserId) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _chatService.getChats(currentUserId!, widget.recieverId),
+      stream: _chatService.getChats(currentUserId, widget.recieverId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -105,12 +107,10 @@ class _ChatScreenState extends State<ChatPage> {
         if (!snapshot.hasData) {
           return const Center(child: Text("No messages yet"));
         }
-
+        print("Data: ${snapshot}");
+        print("Current userId: ${widget.recieverId}");
         final messages = snapshot.data!.docs;
 
-        // return ListView(
-        //   children: snapshot.data!.docs.map((doc) => _buildChatIem(doc)).toList(),
-        // );
         return ListView.builder(
           itemCount: messages.length,
           itemBuilder: (context, index) {
@@ -118,7 +118,7 @@ class _ChatScreenState extends State<ChatPage> {
             final isSender = message['senderId'] == currentUserId;
 
             return BubbleSpecialThree(
-              text: message['chats'],
+              text: message['chat'] ?? "",
               color: isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
               tail: true,
               isSender: isSender,
@@ -132,21 +132,4 @@ class _ChatScreenState extends State<ChatPage> {
       },
     );
   }
-
-  Widget _buildChatIem(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    final isSender = data['senderId'] == currentUserId;
-
-    return BubbleSpecialThree(
-      text: data['chat'],
-      color: isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
-      tail: true,
-      isSender: isSender,
-      textStyle: TextStyle(
-        color: isSender ? Colors.white : Colors.black,
-        fontSize: 16,
-      ),
-    );
-  }
-
 }

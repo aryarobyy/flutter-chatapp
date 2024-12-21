@@ -23,7 +23,9 @@ class ChatService extends ChangeNotifier {
     final Timestamp currentTime = Timestamp.now();
 
     final uuid = Uuid().v4();
-    final roomId = uuid;
+    final roomId = currentUserId.hashCode <= recieverId.hashCode
+        ? '$currentUserId-$recieverId'
+        : '$recieverId-$currentUserId';
     final chatId = uuid;
 
     ChatModel newChat = ChatModel(
@@ -45,9 +47,9 @@ class ChatService extends ChangeNotifier {
    }
 
    Stream<QuerySnapshot> getChats(String userId1, userId2) {
-    List<String> ids = [userId1, userId2];
-    ids.sort();
-    String roomId = ids.join('_');
+    final roomId = userId1.hashCode <= userId2.hashCode
+        ? '$userId1-$userId2'
+        : '$userId2-$userId1';
 
     return _fireStore
         .collection(ROOM_COLLECTION)
