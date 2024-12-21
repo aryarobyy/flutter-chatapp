@@ -1,7 +1,9 @@
 import 'package:chat_app/firebase_options.dart';
+import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/service/auth/auth_gate.dart';
 import 'package:chat_app/service/auth/login_or_register.dart';
 import 'package:chat_app/service/storage_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:chat_app/service/navigation_service.dart';
@@ -21,6 +23,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await FirebaseAuth.instance.setSettings(
+    appVerificationDisabledForTesting: true,
+  );
   setupLocator();
 
   runApp(
@@ -47,8 +52,17 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
       home: AuthGate(),
-      navigatorKey: navigationService.navigatorKey, // Use navigatorKey from GetIt instance
-      initialRoute: '/login',
+      navigatorKey: navigationService.navigatorKey,
+      onGenerateRoute: (settings) {
+        // if (settings.name != null && settings.name!.startsWith('/chat/')) {
+        //   final userId = settings.name!.split('/chat/')[1];
+        //   print("UserId: $userId ");
+        //   return MaterialPageRoute(
+        //     builder: (context) => ChatPage(recieverId: userId),
+        //   );
+        // }
+      },
+      initialRoute: '/',
       routes: {
         '/auth': (BuildContext _context) => LoginOrRegister(),
         '/home': (BuildContext _context) => Home(),

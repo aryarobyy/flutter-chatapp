@@ -1,6 +1,8 @@
 import 'package:chat_app/pages/contact_page.dart';
-import 'package:chat_app/pages/dashboard_page.dart';
+import 'package:chat_app/pages/dashboard.dart';
 import 'package:chat_app/pages/settings_page.dart';
+import 'package:chat_app/service/auth/authentication.dart';
+import 'package:chat_app/service/chat_service.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -25,6 +27,7 @@ class _HomeState extends State<Home> {
       _selectedItem = index;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {

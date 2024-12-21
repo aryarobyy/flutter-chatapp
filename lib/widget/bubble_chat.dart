@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
 
 class BubbleChat extends StatelessWidget {
-  const BubbleChat({super.key});
+  final String sender;
+  final String reciever;
+  const BubbleChat({
+    super.key,
+    required this.sender,
+    required this.reciever,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         BubbleSpecialThree(
-          text: 'Added iMessage shape bubbles',
+          text: sender,
           color: Color(0xFF1B97F3),
           tail: false,
           textStyle: TextStyle(
@@ -18,7 +24,7 @@ class BubbleChat extends StatelessWidget {
           ),
         ),
         BubbleSpecialThree(
-          text: 'Sure',
+          text: reciever,
           color: Color(0xFFE8E8EE),
           tail: false,
           isSender: false,

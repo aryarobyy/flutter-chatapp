@@ -49,7 +49,7 @@ class _LoginState extends State<Login> {
       showSnackBar(context, "Login Successful!");
       _navigation.navigateToRoute('/home');
     } else {
-      showSnackBar(context, res);
+      showSnackBar(context, "Error to login: $res");
     }
   }
 

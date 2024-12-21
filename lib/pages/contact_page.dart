@@ -1,4 +1,4 @@
-import 'package:chat_app/widget/chat_list.dart';
+// import 'package:chat_app/widget/dashboard.dart';
 import 'package:flutter/material.dart';
 
 class Contact extends StatelessWidget {

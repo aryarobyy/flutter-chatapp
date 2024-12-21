@@ -50,6 +50,11 @@ class UserModel {
     };
   }
 
+  @override
+  String toString() {
+    return 'UserModel(userId: $userId, name: $name, email: $email, image: $imageUrl, lastActive: $lastActive)';
+  }
+
   String lastDayActive() {
     return "${lastActive.month}/${lastActive.day}/${lastActive.year}";
   }
