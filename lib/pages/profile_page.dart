@@ -1,10 +1,10 @@
 import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/service/auth/authentication.dart';
-import 'package:chat_app/service/images_service.dart';
+import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/images_service.dart';
+import 'package:chat_app/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import 'package:chat_app/service/storage_service.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});

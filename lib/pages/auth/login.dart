@@ -1,13 +1,13 @@
+import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/google_auth.dart';
+import 'package:chat_app/services/navigation_service.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
 import 'package:chat_app/pages/home_page.dart';
-import 'package:chat_app/service/google_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:chat_app/service/navigation_service.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:chat_app/service/auth/authentication.dart';
 
 class Login extends StatefulWidget {
   final void Function()? onTap;

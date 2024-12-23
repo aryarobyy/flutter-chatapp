@@ -1,10 +1,9 @@
 
-import 'package:chat_app/service/auth/auth_gate.dart';
-import 'package:chat_app/service/navigation_service.dart';
+import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/navigation_service.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
-import 'package:chat_app/service/auth/authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 

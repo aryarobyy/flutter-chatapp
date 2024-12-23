@@ -146,7 +146,6 @@ class AuthMethod {
         return "User profile not found; new profile created.";
       }
     } on FirebaseAuthException catch (e) {
-      // Tangani kesalahan autentikasi
       switch (e.code) {
         case 'user-not-found':
           return "No user found with this email.";

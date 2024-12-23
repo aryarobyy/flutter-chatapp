@@ -1,8 +1,7 @@
 import 'package:chat_app/pages/profile_page.dart';
-import 'package:chat_app/service/auth/login_or_register.dart';
-import 'package:chat_app/service/google_auth.dart';
+import 'package:chat_app/services/google_auth.dart';
+import 'package:chat_app/services/navigation_service.dart';
 import 'package:flutter/material.dart';
-import 'package:chat_app/service/navigation_service.dart';
 import 'package:get_it/get_it.dart';
 
 class Settings extends StatefulWidget {
