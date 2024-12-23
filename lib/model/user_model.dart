@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-  final String userId;
+  final String uid;
   final String name;
   final String email;
   final String imageUrl;
   late DateTime lastActive;
 
   UserModel({
-    required this.userId,
+    required this.uid,
     required this.name,
     required this.email,
     required this.imageUrl,
@@ -33,7 +33,7 @@ class UserModel {
     }
 
     return UserModel(
-      userId: _json["user_id"] ?? "",
+      uid: _json["uid"] ?? "",
       name: _json["name"] ?? "",
       email: _json["email"] ?? "",
       imageUrl: _json["image"] ?? "",
@@ -43,6 +43,7 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     return {
+      "uid": uid,
       "email": email,
       "name": name,
       "last_active": lastActive.toIso8601String(),
@@ -52,7 +53,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(userId: $userId, name: $name, email: $email, image: $imageUrl, lastActive: $lastActive)';
+    return 'UserModel(userId: $uid, name: $name, email: $email, image: $imageUrl, lastActive: $lastActive)';
   }
 
   String lastDayActive() {

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:chat_app/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
@@ -16,6 +17,11 @@ class AuthMethod {
 
   AuthMethod ();
 
+  bool isValidEmail(String email) {
+    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return regex.hasMatch(email);
+  }
+
   Future<String> registerUser({
     required String email,
     required String name,
@@ -25,7 +31,13 @@ class AuthMethod {
   }) async {
     log("Starting registerUser function...");
     String res = "Failed upload user";
+    if (email.isEmpty || password.isEmpty) {
+      return "Email or password is empty";
+    }
 
+    if (!isValidEmail(email.trim())) {
+      return "Invalid email format";
+    }
     try {
       final querySnapshot = await _fireStore
           .collection(USER_COLLECTION)
@@ -95,49 +107,46 @@ class AuthMethod {
       return "Email or password is empty";
     }
 
+    if (!isValidEmail(email.trim())) {
+      return "Invalid email format";
+    }
+
     try {
-      // Ensure settings are applied before proceeding
-      await _auth.setSettings(appVerificationDisabledForTesting: false);
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
 
-      for (int attempt = 0; attempt < 3; attempt++) {
-        try {
-          final querySnapshot = await _fireStore
-              .collection('users')
-              .where('email', isEqualTo: email.trim())
-              .limit(1)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            final userDoc = querySnapshot.docs.first;
-
-            await _fireStore.collection('users').doc(userDoc.id).update({
-              'lastLogin': DateTime.now().toIso8601String(),
-              'isActive': true,
-            });
-
-            return "success";
-          } else {
-            await _fireStore.collection('users').add({
-              'email': email.trim(),
-              'createdAt': DateTime.now().toIso8601String(),
-            });
-            await _auth.signOut();
-            return "User profile not found; new profile created.";
-          }
-        } on FirebaseAuthException catch (e) {
-          print("FirebaseAuthException: $e");
-        } catch (e) {
-          if (attempt == 2) {
-            log("Retry attempts exhausted. Error: $e");
-            return "An error occurred: $e";
-          }
-          log("Retrying login attempt ${attempt + 1} due to error: $e");
-          await Future.delayed(Duration(seconds: 1));
-        }
+      final user = userCredential.user;
+      if (user == null) {
+        return "Failed to retrieve user information.";
       }
 
-      return "Failed to log in after multiple attempts.";
+      final querySnapshot = await _fireStore
+          .collection('users')
+          .where('email', isEqualTo: email.trim())
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final userDoc = querySnapshot.docs.first;
+
+        await _fireStore.collection('users').doc(userDoc.id).update({
+          'lastLogin': DateTime.now().toIso8601String(),
+          'isActive': true,
+        });
+
+        return "success";
+      } else {
+        // Buat dokumen Firestore baru untuk pengguna
+        await _fireStore.collection('users').add({
+          'email': email.trim(),
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+        return "User profile not found; new profile created.";
+      }
     } on FirebaseAuthException catch (e) {
+      // Tangani kesalahan autentikasi
       switch (e.code) {
         case 'user-not-found':
           return "No user found with this email.";
@@ -151,12 +160,10 @@ class AuthMethod {
           return e.message ?? "An unknown error occurred.";
       }
     } catch (e) {
-      // Handle other exceptions
       log("Login error: $e");
       return "An error occurred: $e";
     }
   }
-
 
   Future<String> getCurrentUserId() async {
     try {
@@ -172,16 +179,25 @@ class AuthMethod {
     }
   }
 
-
-
-  Stream<QuerySnapshot> getUserProfile() {
-    try {
-      return FirebaseFirestore.instance.collection('users').snapshots();
-    } catch (e) {
-      print("Error in getUserProfile: $e");
-      rethrow;
-    }
+  Stream<UserModel> getUserById(String uid) {
+    print("Fetching user with UID: $uid");
+    return _fireStore
+        .collection('users')
+        .where('uid', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        return UserModel.fromJSON(snapshot.docs.first.data());
+      } else {
+        throw Exception('User not found');
+      }
+    });
   }
+
+  Stream<String> getCurrentUserIdStream() {
+    return _auth.authStateChanges().map((user) => user?.uid ?? "");
+  }
+
 
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getUserProfileExcludingCurrent() async* {
     try {
@@ -189,7 +205,7 @@ class AuthMethod {
       yield* _fireStore.collection(USER_COLLECTION).snapshots().map((snapshot) {
         return snapshot.docs.where((doc) {
           final userData = doc.data() as Map<String, dynamic>;
-          return userData['userId'] != currentUserId;
+          return userData['uid'] != currentUserId;
         }).toList();
       });
     } catch (e) {
@@ -197,8 +213,6 @@ class AuthMethod {
       rethrow;
     }
   }
-
-
 
   Future<void> signOut() async {
     await _auth.signOut();

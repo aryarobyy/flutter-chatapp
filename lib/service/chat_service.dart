@@ -58,4 +58,21 @@ class ChatService extends ChangeNotifier {
         .orderBy('time', descending: false)
         .snapshots();
   }
+
+
+  Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
+    final roomId = userId1.hashCode <= userId2.hashCode
+        ? '$userId1-$userId2'
+        : '$userId2-$userId1';
+
+    return _fireStore
+        .collection(ROOM_COLLECTION)
+        .doc(roomId)
+        .collection(CHAT_COLLECTION)
+        .orderBy('time', descending: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.isNotEmpty ? snapshot.docs.first : null);
+  }
+
 }
