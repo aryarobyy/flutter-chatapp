@@ -13,7 +13,8 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 void setupLocator() {
-  GetIt.instance.registerLazySingleton<NavigationService>(() => NavigationService());
+  GetIt.instance
+      .registerLazySingleton<NavigationService>(() => NavigationService());
 }
 
 void main() async {
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final NavigationService navigationService = GetIt.instance<NavigationService>();
+    final NavigationService navigationService =
+        GetIt.instance<NavigationService>();
 
     return MaterialApp(
       title: 'Chat App',
@@ -57,7 +59,7 @@ class MyApp extends StatelessWidget {
         //   final userId = settings.name!.split('/chat/')[1];
         //   print("UserId: $userId ");
         //   return MaterialPageRoute(
-        //     builder: (context) => ChatPage(recieverId: userId),
+        //     builder: (context) => ChatPage(receiverId: userId),
         //   );
         // }
       },

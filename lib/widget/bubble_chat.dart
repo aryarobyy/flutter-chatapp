@@ -4,16 +4,16 @@
 // import 'package:chat_bubbles/chat_bubbles.dart';
 //
 // class BubbleChat extends StatelessWidget {
-//   final String recieverId;
+//   final String receiverId;
 //   const BubbleChat({
 //     super.key,
-//     required this.recieverId,
+//     required this.receiverId,
 //   });
 //   final ChatService _chatService = ChatService();
 //   @override
 //   Widget build(BuildContext context, String currentUserId) {
 //     return StreamBuilder<QuerySnapshot>(
-//       stream: _chatService.getChats(currentUserId, widget.recieverId),
+//       stream: _chatService.getChats(currentUserId, widget.receiverId),
 //       builder: (context, snapshot) {
 //         if (snapshot.connectionState == ConnectionState.waiting) {
 //           return const Center(child: CircularProgressIndicator());
@@ -25,7 +25,7 @@
 //           return const Center(child: Text("No messages yet"));
 //         }
 //         print("Data: ${snapshot}");
-//         print("Current userId: ${widget.recieverId}");
+//         print("Current userId: ${widget.receiverId}");
 //         final messages = snapshot.data!.docs;
 //
 //         return ListView.builder(

@@ -197,6 +197,19 @@ class AuthMethod {
     return _auth.authStateChanges().map((user) => user?.uid ?? "");
   }
 
+  Stream<UserModel> getUserByName(String name) {
+    return _fireStore
+        .collection('users')
+        .where('name', isEqualTo: name)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        return UserModel.fromJSON(snapshot.docs.first.data());
+      } else {
+        throw Exception('User not found');
+      }
+    });
+  }
 
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getUserProfileExcludingCurrent() async* {
     try {
