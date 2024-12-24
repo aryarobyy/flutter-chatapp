@@ -6,8 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ChatPage extends StatefulWidget {
-  final String recieverId;
-  const ChatPage({super.key, required this.recieverId});
+  final String receiverId;
+  const ChatPage({super.key, required this.receiverId});
 
   @override
   State<ChatPage> createState() => _ChatScreenState();
@@ -26,7 +26,7 @@ class _ChatScreenState extends State<ChatPage> {
 
   void handleSendChat() async {
     if (messageController.text.isNotEmpty) {
-      await _chatService.sendChat(widget.recieverId, messageController.text);
+      await _chatService.sendChat( receiverId: widget.receiverId,message: messageController.text);
       messageController.clear();
     }
   }
@@ -39,7 +39,7 @@ class _ChatScreenState extends State<ChatPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             appBar: AppBar(
-              title: _profileUser(context, widget.recieverId),
+              title: _profileUser(context, widget.receiverId),
             ),
             body: const Center(
               child: CircularProgressIndicator(),
@@ -50,7 +50,7 @@ class _ChatScreenState extends State<ChatPage> {
         if (snapshot.hasError || !snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(
-              title: _profileUser(context, widget.recieverId),
+              title: _profileUser(context, widget.receiverId),
             ),
             body: const Center(
               child: Text("Error fetching user information"),
@@ -62,7 +62,7 @@ class _ChatScreenState extends State<ChatPage> {
 
         return Scaffold(
           appBar: AppBar(
-            title: _profileUser(context, widget.recieverId),
+            title: _profileUser(context, widget.receiverId),
           ),
           body: Column(
             children: [
@@ -94,7 +94,7 @@ class _ChatScreenState extends State<ChatPage> {
 
   Widget _bubbleChat(BuildContext context, String currentUserId) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _chatService.getChats(currentUserId, widget.recieverId),
+      stream: _chatService.getChats(currentUserId, widget.receiverId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -106,7 +106,7 @@ class _ChatScreenState extends State<ChatPage> {
           return const Center(child: Text("No messages yet"));
         }
         print("Data: ${snapshot}");
-        print("Current userId: ${widget.recieverId}");
+        print("Current userId: ${widget.receiverId}");
         final messages = snapshot.data!.docs;
 
         return ListView.builder(
@@ -118,13 +118,15 @@ class _ChatScreenState extends State<ChatPage> {
             bool isLatest(List messages, int index) {
               if (index >= messages.length - 1) return true;
               final currentMsg = messages[index].data() as Map<String, dynamic>;
-              final nextMsg = messages[index + 1].data() as Map<String, dynamic>;
+              final nextMsg =
+                  messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
 
             return BubbleSpecialThree(
               text: message['chat'] ?? "",
-              color: isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
+              color:
+                  isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
               tail: isLatest(messages, index),
               isSender: isSender,
               textStyle: TextStyle(
@@ -138,37 +140,38 @@ class _ChatScreenState extends State<ChatPage> {
     );
   }
 
-  Widget _profileUser(BuildContext context, String recieverId) {
-    final recieverId = widget.recieverId;
+  Widget _profileUser(BuildContext context, String receiverId) {
+    final receiverId = widget.receiverId;
 
     return StreamBuilder(
-        stream: _auth.getUserById(recieverId!),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return const Center(child: Text("Error loading user profile"));
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: Text("No user found"));
-          }
+      stream: _auth.getUserById(receiverId!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text("Error loading user profile"));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: Text("No user found"));
+        }
 
-          final user = snapshot.data!;
-          return Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: user.imageUrl.isNotEmpty
-                    ? NetworkImage(user.imageUrl)
-                    : AssetImage("assets/images/user1.jpg")
-                as ImageProvider,
-                radius: 20,
-              ),
-              SizedBox(width: 20,),
-              Text(user.name?? ""),
-            ],
-          );
-        },
+        final user = snapshot.data!;
+        return Row(
+          children: [
+            CircleAvatar(
+              backgroundImage: user.imageUrl.isNotEmpty
+                  ? NetworkImage(user.imageUrl)
+                  : AssetImage("assets/images/user1.jpg") as ImageProvider,
+              radius: 20,
+            ),
+            SizedBox(
+              width: 20,
+            ),
+            Text(user.name ?? ""),
+          ],
+        );
+      },
     );
   }
 }
