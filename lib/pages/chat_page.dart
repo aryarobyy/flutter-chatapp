@@ -7,7 +7,11 @@ import 'package:flutter/material.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverId;
-  const ChatPage({super.key, required this.receiverId});
+  final String? roomId;
+  const ChatPage({super.key,
+    required this.receiverId,
+    required this.roomId}
+      );
 
   @override
   State<ChatPage> createState() => _ChatScreenState();
@@ -26,7 +30,12 @@ class _ChatScreenState extends State<ChatPage> {
 
   void handleSendChat() async {
     if (messageController.text.isNotEmpty) {
-      await _chatService.sendChat( receiverId: widget.receiverId,message: messageController.text);
+      final _currUser = await _auth.getCurrentUserId();
+      final List<String> members = [ _currUser, widget.receiverId];
+      await _chatService.sendChat(
+          message: messageController.text,
+          members: members
+      );
       messageController.clear();
     }
   }
@@ -99,14 +108,15 @@ class _ChatScreenState extends State<ChatPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+
         if (snapshot.hasError) {
-          return const Center(child: Text("Error loading messages"));
+          return Center(child: Text("Error loading messages: ${snapshot.error}"));
         }
-        if (!snapshot.hasData) {
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text("No messages yet"));
         }
-        print("Data: ${snapshot}");
-        print("Current userId: ${widget.receiverId}");
+
         final messages = snapshot.data!.docs;
 
         return ListView.builder(
@@ -118,15 +128,13 @@ class _ChatScreenState extends State<ChatPage> {
             bool isLatest(List messages, int index) {
               if (index >= messages.length - 1) return true;
               final currentMsg = messages[index].data() as Map<String, dynamic>;
-              final nextMsg =
-                  messages[index + 1].data() as Map<String, dynamic>;
+              final nextMsg = messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
 
             return BubbleSpecialThree(
               text: message['chat'] ?? "",
-              color:
-                  isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
+              color: isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
               tail: isLatest(messages, index),
               isSender: isSender,
               textStyle: TextStyle(

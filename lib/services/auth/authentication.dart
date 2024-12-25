@@ -181,8 +181,23 @@ class AuthMethod {
   Stream<UserModel> getUserById(String uid) {
     print("Fetching user with UID: $uid");
     return _fireStore
-        .collection('users')
+        .collection(USER_COLLECTION)
         .where('uid', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        return UserModel.fromJSON(snapshot.docs.first.data());
+      } else {
+        throw Exception('User not found');
+      }
+    });
+  }
+
+  Stream<UserModel> getUserexceptCurrent(){
+    final _currUser = _auth.currentUser!.uid;
+    return _fireStore
+        .collection(USER_COLLECTION)
+        .where('uid', isNotEqualTo: _currUser)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isNotEmpty) {
@@ -199,7 +214,7 @@ class AuthMethod {
 
   Stream<UserModel> getUserByName(String name) {
     return _fireStore
-        .collection('users')
+        .collection(USER_COLLECTION)
         .where('name', isEqualTo: name)
         .snapshots()
         .map((snapshot) {
@@ -209,21 +224,6 @@ class AuthMethod {
         throw Exception('User not found');
       }
     });
-  }
-
-  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> getUserProfileExcludingCurrent() async* {
-    try {
-      final currentUserId = await getCurrentUserId();
-      yield* _fireStore.collection(USER_COLLECTION).snapshots().map((snapshot) {
-        return snapshot.docs.where((doc) {
-          final userData = doc.data() as Map<String, dynamic>;
-          return userData['uid'] != currentUserId;
-        }).toList();
-      });
-    } catch (e) {
-      print("Error in getUserProfileExcludingCurrent: $e");
-      rethrow;
-    }
   }
 
   Future<void> signOut() async {
