@@ -31,10 +31,10 @@ class _ChatScreenState extends State<ChatPage> {
   void handleSendChat() async {
     if (messageController.text.isNotEmpty) {
       final _currUser = await _auth.getCurrentUserId();
-      final List<String> members = [ _currUser, widget.receiverId];
+      final List<String> member = [ _currUser, widget.receiverId];
       await _chatService.sendChat(
           message: messageController.text,
-          members: members
+          member: member
       );
       messageController.clear();
     }
