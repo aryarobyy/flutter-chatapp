@@ -1,5 +1,5 @@
 import 'package:chat_app/pages/contact_page.dart';
-import 'package:chat_app/pages/dashboard.dart';
+import 'package:chat_app/pages/contact_page.dart';
 import 'package:chat_app/pages/settings_page.dart';
 import 'package:chat_app/pages/test.dart';
 import 'package:chat_app/widget/saved_user_contact.dart';
@@ -17,8 +17,8 @@ class _HomeState extends State<Home> {
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
-    Dashboard(),
     SavedUserContact(),
+    Contact(),
     Settings()
   ];
 

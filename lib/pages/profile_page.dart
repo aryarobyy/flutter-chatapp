@@ -86,7 +86,7 @@ class _ProfileState extends State<Profile> {
                             CircleAvatar(
                               backgroundImage: imgUrls.isNotEmpty
                                   ? NetworkImage(imgUrls.last)
-                                  : AssetImage("assets/images/user1.jpg")
+                                  : AssetImage("assets/images/profile.png")
                               as ImageProvider,
                               radius: 70,
                             ),

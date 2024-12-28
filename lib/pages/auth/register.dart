@@ -1,6 +1,5 @@
 
 import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/navigation_service.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
@@ -24,7 +23,6 @@ class _RegisterState extends State<Register> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
-  late NavigationService _navigation = NavigationService(); // Declare _navigation
   bool isLoading = false;
 
   @override
@@ -55,7 +53,7 @@ class _RegisterState extends State<Register> {
 
     try {
       String res = await AuthMethod().registerUser(
-        email: emailController.text,
+        email: emailController.text.toLowerCase(),
         name: nameController.text,
         password: passwordController.text,
         img_url: "",

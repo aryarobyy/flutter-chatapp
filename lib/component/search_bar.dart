@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 class MySearchBar extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
-  final Function(String) onChanged;
   final VoidCallback onPressed;
 
   const MySearchBar({
     Key? key,
     required this.controller,
     required this.hintText,
-    required this.onChanged,
     required this.onPressed,
   }) : super(key: key);
 
@@ -34,14 +32,16 @@ class MySearchBar extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
-              onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: hintText,
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
               ),
             ),
           ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: onPressed,
+          )
         ],
       ),
     );

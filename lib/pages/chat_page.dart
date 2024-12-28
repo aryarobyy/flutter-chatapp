@@ -152,7 +152,7 @@ class _ChatScreenState extends State<ChatPage> {
     final receiverId = widget.receiverId;
 
     return StreamBuilder(
-      stream: _auth.getUserById(receiverId!),
+      stream: _auth.getUserById(receiverId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -176,7 +176,7 @@ class _ChatScreenState extends State<ChatPage> {
             SizedBox(
               width: 20,
             ),
-            Text(user.name ?? ""),
+            Text(user.name),
           ],
         );
       },

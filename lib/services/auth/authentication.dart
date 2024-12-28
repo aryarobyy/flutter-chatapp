@@ -193,11 +193,14 @@ class AuthMethod {
     });
   }
 
-  Stream<UserModel> getUserexceptCurrent(){
-    final _currUser = _auth.currentUser!.uid;
+  Stream<String> getCurrentUserIdStream() {
+    return _auth.authStateChanges().map((user) => user?.uid ?? "");
+  }
+
+  Stream<UserModel> getUserByName(String name) {
     return _fireStore
         .collection(USER_COLLECTION)
-        .where('uid', isNotEqualTo: _currUser)
+        .where('name', isEqualTo: name)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isNotEmpty) {
@@ -208,14 +211,10 @@ class AuthMethod {
     });
   }
 
-  Stream<String> getCurrentUserIdStream() {
-    return _auth.authStateChanges().map((user) => user?.uid ?? "");
-  }
-
-  Stream<UserModel> getUserByName(String name) {
+  Stream<UserModel> getUserByEmail(String email) {
     return _fireStore
         .collection(USER_COLLECTION)
-        .where('name', isEqualTo: name)
+        .where('email', isEqualTo: email)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isNotEmpty) {

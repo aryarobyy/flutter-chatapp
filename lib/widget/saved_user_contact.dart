@@ -1,3 +1,4 @@
+import 'package:chat_app/component/search_bar.dart';
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/services/auth/authentication.dart';
@@ -32,6 +33,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
       selectedUserId = userId;
     });
   }
+
   Future<void> handleCreateRoom(Map<String, dynamic> userMap) async {
     try {
       final currentUserId = await AuthMethod().getCurrentUserId();
@@ -64,7 +66,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
     }
   }
 
-
   Future<void> _initializeRooms() async {
     try {
       final id = await _auth.getCurrentUserId();
@@ -81,13 +82,23 @@ class _SavedUserContactState extends State<SavedUserContact> {
 
   @override
   Widget build(BuildContext context) {
-    if (currentUserId == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("On cam"),
+      ),
+      body: currentUserId == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+        children: [
+          Expanded(child: _contactUi(context)),
+        ],
+      ),
+    );
+  }
 
+  @override
+  Widget _contactUi(BuildContext context) {
     Stream<QuerySnapshot> allRoom = _chat.getUserRoom(currentUserId!);
-    print("All room: $allRoom");
-
     return StreamBuilder<QuerySnapshot>(
       stream: allRoom,
       builder: (context, snapshot) {
@@ -96,17 +107,16 @@ class _SavedUserContactState extends State<SavedUserContact> {
         }
 
         if (snapshot.hasError) {
-          return const Center(child: Text("Error loading messages"));
+          return const Center(child: Text("Error loading room"));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("No messages yet"));
+          return const Center(child: Text("No room yet"));
         }
 
         final rooms = snapshot.data!.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .toList();
-
         debugPrint('[$_tag] Fetched rooms: $rooms');
 
         final List<Map<String, dynamic>> roomLists = rooms.map((room) {
@@ -115,14 +125,13 @@ class _SavedUserContactState extends State<SavedUserContact> {
                 (id) => id != currentUserId,
             orElse: () => null,
           );
-          print("ReceiverId for room: $receiverId");
+
           return {
             "receiverId": receiverId,
             ...room,
           };
         }).toList();
 
-        print("Processed Roomlist: $roomLists");
 
         return ListView.builder(
           itemCount: roomLists.length,
@@ -144,16 +153,16 @@ class _SavedUserContactState extends State<SavedUserContact> {
                 final user = userSnapshot.data!;
 
                 return ChatTile(
-                  user: user,
-                  onChatTap: () async {
-                    final userMap = {
-                      'uid': user.uid,
-                    };
-                    await handleCreateRoom(userMap);
-                  },
-                  onProfileTap: () {
-                    _showUserProfile(context, user);
-                  },
+                    user: user,
+                    onChatTap: () async {
+                      final userMap = {
+                        'uid': user.uid,
+                      };
+                      await handleCreateRoom(userMap);
+                    },
+                    onProfileTap: () {
+                      _showUserProfile(context, user);
+                    },
                 );
               },
             );
@@ -178,7 +187,8 @@ class _SavedUserContactState extends State<SavedUserContact> {
             Text('Last active: ${user.lastDayActive()}'),
             if (user.wasRecentlyActive())
               const Text('Status: Recently active',
-                  style: TextStyle(color: Colors.green)),
+                  style: TextStyle(color: Colors.green)
+              ),
           ],
         ),
         actions: [
