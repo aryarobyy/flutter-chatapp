@@ -4,6 +4,7 @@ import 'package:chat_app/widget/text_field.dart';
 import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverId;
@@ -21,6 +22,7 @@ class _ChatScreenState extends State<ChatPage> {
   final TextEditingController messageController = TextEditingController();
   final ChatService _chatService = ChatService();
   final AuthMethod _auth = AuthMethod();
+  final FlutterSecureStorage FStorage = FlutterSecureStorage();
 
   @override
   void dispose() {
@@ -31,6 +33,7 @@ class _ChatScreenState extends State<ChatPage> {
   void handleSendChat() async {
     if (messageController.text.isNotEmpty) {
       final _currUser = await _auth.getCurrentUserId();
+      print("Current User: $_currUser");
       final List<String> member = [ _currUser, widget.receiverId];
       await _chatService.sendChat(
           message: messageController.text,
@@ -170,7 +173,7 @@ class _ChatScreenState extends State<ChatPage> {
             CircleAvatar(
               backgroundImage: user.imageUrl.isNotEmpty
                   ? NetworkImage(user.imageUrl)
-                  : AssetImage("assets/images/user1.jpg") as ImageProvider,
+                  : AssetImage("assets/images/profile.png") as ImageProvider,
               radius: 20,
             ),
             SizedBox(

@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:chat_app/model/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,7 +13,7 @@ const String USER_COLLECTION = "users";
 class AuthMethod {
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GetIt _getIt = GetIt.instance;
+  final FStorage = FlutterSecureStorage();
 
   AuthMethod ();
 
@@ -130,7 +130,9 @@ class AuthMethod {
 
       if (querySnapshot.docs.isNotEmpty) {
         final userDoc = querySnapshot.docs.first;
+        final userId = userDoc.data()?['uid'];
 
+        await FStorage.write(key: 'uid', value: userId);
         await _fireStore.collection('users').doc(userDoc.id).update({
           'lastLogin': DateTime.now().toIso8601String(),
           'isActive': true,
@@ -138,7 +140,6 @@ class AuthMethod {
 
         return "success";
       } else {
-        // Buat dokumen Firestore baru untuk pengguna
         await _fireStore.collection('users').add({
           'email': email.trim(),
           'createdAt': DateTime.now().toIso8601String(),
@@ -226,6 +227,7 @@ class AuthMethod {
   }
 
   Future<void> signOut() async {
+    await FStorage.delete(key: 'uid');
     await _auth.signOut();
   }
 }

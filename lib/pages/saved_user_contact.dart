@@ -1,4 +1,3 @@
-import 'package:chat_app/component/search_bar.dart';
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/services/auth/authentication.dart';
@@ -97,6 +96,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
   }
 
   @override
+  @override
   Widget _contactUi(BuildContext context) {
     Stream<QuerySnapshot> allRoom = _chat.getUserRoom(currentUserId!);
     return StreamBuilder<QuerySnapshot>(
@@ -132,12 +132,15 @@ class _SavedUserContactState extends State<SavedUserContact> {
           };
         }).toList();
 
-
         return ListView.builder(
           itemCount: roomLists.length,
           itemBuilder: (context, index) {
             final room = roomLists[index];
             final receiverId = room['receiverId'];
+
+            if (receiverId == null) {
+              return const SizedBox.shrink();
+            }
 
             return StreamBuilder<UserModel>(
               stream: _auth.getUserById(receiverId),
@@ -153,16 +156,16 @@ class _SavedUserContactState extends State<SavedUserContact> {
                 final user = userSnapshot.data!;
 
                 return ChatTile(
-                    user: user,
-                    onChatTap: () async {
-                      final userMap = {
-                        'uid': user.uid,
-                      };
-                      await handleCreateRoom(userMap);
-                    },
-                    onProfileTap: () {
-                      _showUserProfile(context, user);
-                    },
+                  user: user,
+                  onChatTap: () async {
+                    final userMap = {
+                      'uid': user.uid,
+                    };
+                    await handleCreateRoom(userMap);
+                  },
+                  onProfileTap: () {
+                    _showUserProfile(context, user);
+                  },
                 );
               },
             );
@@ -170,8 +173,8 @@ class _SavedUserContactState extends State<SavedUserContact> {
         );
       },
     );
-
   }
+
 
   //Sementara
   void _showUserProfile(BuildContext context, UserModel user) {

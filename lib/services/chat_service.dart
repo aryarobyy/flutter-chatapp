@@ -135,6 +135,19 @@ class ChatService extends ChangeNotifier {
         .snapshots( );
   }
 
+  Future<Map<String, dynamic>> getRoomById(String roomId) async {
+    final docSnapshot = await _fireStore
+        .collection(ROOM_COLLECTION)
+        .doc(roomId)
+        .get();
+
+    if (docSnapshot.exists) {
+      return docSnapshot.data() as Map<String, dynamic>;
+    } else {
+      return {};
+    }
+  }
+
   Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
     final roomId = userId1.hashCode <= userId2.hashCode
         ? '$userId1-$userId2'
