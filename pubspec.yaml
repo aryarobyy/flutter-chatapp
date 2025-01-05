@@ -30,6 +30,10 @@ dependencies:
   flutter_keyboard_visibility: ^6.0.0
   localstorage: ^4.0.0
   flutter_secure_storage: ^9.2.2
+  flutter_dotenv: ^5.2.1
+  cloudinary_flutter: ^1.0.0
+  cloudinary_url_gen: ^1.0.0
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -40,4 +44,5 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
     - assets/images/

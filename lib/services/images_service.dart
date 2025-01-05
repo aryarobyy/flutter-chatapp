@@ -1,20 +1,37 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:chat_app/component/snackbar.dart';
+import 'package:chat_app/services/auth/authentication.dart';
+import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
+
 
 const String IMAGE_COLLECTION = "images";
 
 class ImagesService {
   final ImagePicker _picker = ImagePicker();
+  late final Cloudinary cloudinary;
+  final AuthMethod _auth = AuthMethod();
 
-  Future<void> uploadImageToFirestore(BuildContext context) async {
+  ImagesService() {
+    if (dotenv.env['CLOUDINARY_CLOUD_NAME'] == null ||
+        dotenv.env['CLOUDINARY_UPLOAD_PRESET'] == null) {
+      throw Exception('Cloudinary environment variables not set');
+    }
+  }
+
+  Future uploadImage(BuildContext context) async {
     try {
-      // Pick image from gallery
-      XFile? pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+      XFile? pickedImage = await _picker.pickImage(
+          source: ImageSource.gallery,
+        imageQuality: 70
+      );
 
       if (pickedImage == null) {
         showSnackBar(context, "No image selected.");
@@ -22,48 +39,54 @@ class ImagesService {
       }
 
       File imageFile = File(pickedImage.path);
-
       if (!await imageFile.exists()) {
         showSnackBar(context, "File does not exist.");
         return;
       }
 
-      // Generate a unique ID for the image
       final uuid = Uuid().v4();
+      late final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
+      late final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET']!;
 
-      // Reference to Firebase Storage
-      Reference storageReference = FirebaseStorage.instance
-          .ref()
-          .child("$IMAGE_COLLECTION/$uuid.jpg");
+      final uri = Uri.parse(
+          'https://api.cloudinary.com/v1_1/$cloudName/auto/upload'
+      );
 
-      // Upload image to Firebase Storage
-      UploadTask uploadTask = storageReference.putFile(imageFile);
+      var request = http.MultipartRequest('POST', uri)
+        ..fields['upload_preset'] = uploadPreset
+        ..fields['public_id'] = uuid
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'file',
+            imageFile.path,
+            filename: '$uuid.jpg',
+          ),
+        );
 
-      // Await upload completion
-      TaskSnapshot snapshot = await uploadTask.whenComplete(() => {});
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
 
-      // Check if upload is successful
-      if (snapshot.state == TaskState.success) {
-        // Get the download URL
-        String imageUrl = await storageReference.getDownloadURL();
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(responseData);
+        final imageUrl = jsonResponse['secure_url'] as String;
 
-        // Save image metadata to Firestore
-        await FirebaseFirestore.instance.collection(IMAGE_COLLECTION).add({
-          'url': imageUrl,
-          'uploaded_at': DateTime.now().toUtc().toIso8601String(),
-        });
+        // final updatedData ={
+        //   'image' : imageUrl,
+        // };
+        // final res = _auth.updateUser(updatedData);
+        // print("Response: $res");
 
-        // Notify user and log success
         showSnackBar(context, "Image uploaded successfully!");
-        print('Image uploaded successfully! URL: $imageUrl');
+        print("Uploaded Image URL: $imageUrl");
+        return imageUrl;
       } else {
-        showSnackBar(context, "Upload failed. Please try again.");
-        print('Upload task failed.');
+        showSnackBar(context, "Image upload failed.");
+        print("Cloudinary upload error: ${response.reasonPhrase}");
       }
     } catch (e) {
-      // Handle errors
       showSnackBar(context, "Upload failed: $e");
       print('Error uploading image: $e');
     }
   }
+
 }

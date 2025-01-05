@@ -179,6 +179,37 @@ class AuthMethod {
     }
   }
 
+
+
+  Future<UserModel> updateUser(Map<String, dynamic> updatedData) async {
+    try {
+      final String userId = await getCurrentUserId();
+
+      await _fireStore
+          .collection(USER_COLLECTION)
+          .doc(userId)
+          .update(updatedData);
+
+      logger.i("User data successfully updated for UID: $userId");
+
+      final DocumentSnapshot userDoc =
+      await _fireStore
+          .collection(USER_COLLECTION)
+          .doc(userId)
+          .get();
+
+      if (userDoc.exists) {
+        return UserModel.fromJSON(userDoc.data() as Map<String, dynamic>);
+      } else {
+        throw Exception("Failed to retrieve updated user data");
+      }
+    } catch (e) {
+      logger.e("Error updating user: $e");
+      throw Exception("An error occurred while updating user: $e");
+    }
+  }
+
+
   Stream<UserModel> getUserById(String uid) {
     print("Fetching user with UID: $uid");
     return _fireStore
@@ -196,20 +227,6 @@ class AuthMethod {
 
   Stream<String> getCurrentUserIdStream() {
     return _auth.authStateChanges().map((user) => user?.uid ?? "");
-  }
-
-  Stream<UserModel> getUserByName(String name) {
-    return _fireStore
-        .collection(USER_COLLECTION)
-        .where('name', isEqualTo: name)
-        .snapshots()
-        .map((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        return UserModel.fromJSON(snapshot.docs.first.data());
-      } else {
-        throw Exception('User not found');
-      }
-    });
   }
 
   Stream<UserModel> getUserByEmail(String email) {
