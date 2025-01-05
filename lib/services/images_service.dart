@@ -70,12 +70,6 @@ class ImagesService {
         final jsonResponse = jsonDecode(responseData);
         final imageUrl = jsonResponse['secure_url'] as String;
 
-        // final updatedData ={
-        //   'image' : imageUrl,
-        // };
-        // final res = _auth.updateUser(updatedData);
-        // print("Response: $res");
-
         showSnackBar(context, "Image uploaded successfully!");
         print("Uploaded Image URL: $imageUrl");
         return imageUrl;

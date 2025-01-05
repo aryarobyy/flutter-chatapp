@@ -63,12 +63,27 @@ class _ContactState extends State<Contact> {
   }
 
 
-  void _onPressed() {
-    setState(() {
-      _searchQuery = _searchController.text;
-      isSearching = true;
-    });
+  void _onPressed() async {
+    try {
+      final userStream = _auth.getUserById(_currentUserId as String);
+      final userData = await userStream.first;
+      final _currentEmail = userData.email;
+
+      if (_searchController.text == _currentEmail){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You cannot chat with yourself')),
+        );
+        return;
+      }
+      setState(() {
+        _searchQuery = _searchController.text;
+        isSearching = true;
+      });
+    } catch (e) {
+      print("Error fetching user data: $e");
+    }
   }
+
 
   Future<void> handleCreateRoom(Map<String, dynamic> userMap) async {
     if (_currentUserId == null) {

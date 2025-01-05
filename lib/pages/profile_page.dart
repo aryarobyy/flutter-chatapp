@@ -2,8 +2,9 @@ import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/images_service.dart';
 import 'package:chat_app/services/storage_service.dart';
+import 'package:chat_app/widget/text_field.dart';
+import 'package:chat_app/widget/text_field_2.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 class Profile extends StatefulWidget {
@@ -18,15 +19,39 @@ class _ProfileState extends State<Profile> {
   late double _deviceWidth;
   final ImagesService _imagesService = ImagesService();
   final AuthMethod _auth = AuthMethod();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Ambil gambar yang sudah ada saat pertama kali widget dimuat
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<StorageService>(context, listen: false).fetchImages();
     });
   }
+
+  void handleUploadImage() async {
+    try {
+      final res = await _imagesService.uploadImage(context);
+
+      if (res == null || res.isEmpty) {
+        print("Image upload failed or returned an empty response.");
+        return;
+      }
+
+      final uploaded = {
+        'image': res
+      };
+      print("Response: $res");
+      print("Uploaded img: $uploaded");
+
+      final uploadRes = await _auth.updateUser(uploaded);
+      print("Success: $uploadRes");
+    } catch (e) {
+      print("Error uploading image: $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +63,6 @@ class _ProfileState extends State<Profile> {
     );
   }
   Widget _buildProfileUi() {
-    return Consumer<StorageService>(
-      builder: (context, storageService, child) {
-        final List<String> imgUrls = storageService.imgUrls;
-
         return StreamBuilder<String>(
           stream: _auth.getCurrentUserIdStream(),
           builder: (context, snapshots) {
@@ -57,7 +78,6 @@ class _ProfileState extends State<Profile> {
             }
             final currUser = snapshots.data;
             print("Current user: $currUser");
-
             return StreamBuilder<UserModel>(
               stream: _auth.getUserById(currUser!),
               builder: (context, profileSnapshot) {
@@ -72,7 +92,8 @@ class _ProfileState extends State<Profile> {
                   );
                 }
                 final user = profileSnapshot.data!;
-                print("User: $user");
+                final imgUrl = user.imageUrl;
+                print("Image $user");
                 return Center(
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -80,12 +101,13 @@ class _ProfileState extends State<Profile> {
                       vertical: _deviceHeight * 0.02,
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Stack(
                           children: [
                             CircleAvatar(
-                              backgroundImage: imgUrls.isNotEmpty
-                                  ? NetworkImage(imgUrls.last)
+                              backgroundImage: imgUrl.isNotEmpty
+                                  ? NetworkImage(imgUrl)
                                   : AssetImage("assets/images/profile.png")
                               as ImageProvider,
                               radius: 70,
@@ -107,9 +129,7 @@ class _ProfileState extends State<Profile> {
                                   ],
                                 ),
                                 child: IconButton(
-                                  onPressed: () async {
-                                    _imagesService.uploadImageToFirestore(context);
-                                  },
+                                  onPressed: handleUploadImage,
                                   icon: Icon(
                                     Icons.camera_alt_outlined,
                                     color: Colors.white,
@@ -120,20 +140,24 @@ class _ProfileState extends State<Profile> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 20),
-                        Text(
-                          user.name,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        SizedBox(height: 40),
+                        SizedBox(
+                          width: 350,
+                          child: MyTextField2(
+                              controller: _nameController,
+                              name: user.name,
+                              prefixIcon: Icons.person,
+                              inputType: TextInputType.name
+                          )
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          "Halo nama saya bla bla bla",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
+                        SizedBox(height: 20,),
+                        SizedBox(
+                          width: 350,
+                          child: MyTextField2(
+                              controller: _emailController,
+                              name: user.email,
+                              prefixIcon: Icons.email_outlined,
+                              inputType: TextInputType.emailAddress
                           ),
                         ),
                       ],
@@ -144,8 +168,6 @@ class _ProfileState extends State<Profile> {
             );
           },
         );
-      },
-    );
   }
 
 }

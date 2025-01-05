@@ -66,7 +66,7 @@ class AuthMethod {
         'uid': userCredential.user!.uid,
       };
 
-      await _fireStore.collection(USER_COLLECTION).doc(uuid).set(userData);
+      await _fireStore.collection(USER_COLLECTION).doc(userCredential.user!.uid).set(userData);
       final storedData = await _fireStore.collection(USER_COLLECTION).doc(uuid).get();
       res = "success";
 
@@ -184,27 +184,27 @@ class AuthMethod {
   Future<UserModel> updateUser(Map<String, dynamic> updatedData) async {
     try {
       final String userId = await getCurrentUserId();
+      print("Attempting to update user with UID: $userId and data: $updatedData");
 
       await _fireStore
           .collection(USER_COLLECTION)
           .doc(userId)
-          .update(updatedData);
+          .set(updatedData, SetOptions(merge: true));
 
-      logger.i("User data successfully updated for UID: $userId");
+      print("Update successful for UID: $userId");
 
       final DocumentSnapshot userDoc =
-      await _fireStore
-          .collection(USER_COLLECTION)
-          .doc(userId)
-          .get();
+      await _fireStore.collection(USER_COLLECTION).doc(userId).get();
 
       if (userDoc.exists) {
+        print("Fetched updated user data: ${userDoc.data()}");
         return UserModel.fromJSON(userDoc.data() as Map<String, dynamic>);
       } else {
+        print("User document not found after update.");
         throw Exception("Failed to retrieve updated user data");
       }
     } catch (e) {
-      logger.e("Error updating user: $e");
+      print("Error in updateUser: $e");
       throw Exception("An error occurred while updating user: $e");
     }
   }

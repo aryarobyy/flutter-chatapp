@@ -3,12 +3,14 @@ import 'package:chat_app/services/auth/auth_gate.dart';
 import 'package:chat_app/services/auth/login_or_register.dart';
 import 'package:chat_app/services/navigation_service.dart';
 import 'package:chat_app/services/storage_service.dart';
+import 'package:cloudinary_flutter/cloudinary_object.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/pages/contact_page.dart';
 import 'package:chat_app/pages/settings_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
@@ -18,10 +20,13 @@ void setupLocator() {
 }
 
 void main() async {
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  late final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
+  CloudinaryObject.fromCloudName(cloudName: cloudName);
 
   await FirebaseAuth.instance.setSettings(
     appVerificationDisabledForTesting: true,
