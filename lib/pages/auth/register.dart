@@ -1,8 +1,12 @@
-
+import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/google_auth.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
+import 'package:chat_app/widget/otp.dart';
 import 'package:chat_app/widget/text_field.dart';
+import 'package:email_otp/email_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -23,7 +27,9 @@ class _RegisterState extends State<Register> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
   bool isLoading = false;
+  
 
   @override
   void dispose() {
@@ -31,6 +37,10 @@ class _RegisterState extends State<Register> {
     passwordController.dispose();
     nameController.dispose();
     super.dispose();
+  }
+
+  void handleRegister() async {
+
   }
 
   void register() async {
@@ -65,7 +75,11 @@ class _RegisterState extends State<Register> {
       });
 
       if (res == "success") {
-        Navigator.of(context).pushNamed('/home');
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Home()
+            )
+        );
         showSnackBar(context, "Account created successfully");
         print("Response $res");
       } else {
@@ -171,9 +185,10 @@ class _RegisterState extends State<Register> {
                     isLoading
                         ? CircularProgressIndicator()
                         : MyButton(
-                            onPressed: register,
-                            text: "Register",
-                          ),
+                      onPressed: register,
+                      text: "Register",
+                    ),
+
                     SizedBox(
                       height: 20,
                     ),
@@ -182,11 +197,54 @@ class _RegisterState extends State<Register> {
                       children: [
                         const Text("Already have an account? "),
                         InkWell(
-                            onTap: widget.onTap,
-                            child: const Text("Login",
-                                style: TextStyle(color: Colors.blue)))
+                          onTap: widget.onTap,
+                          child: const Text("Login",
+                              style: TextStyle(color: Colors.blue)
+                          )
+                        )
                       ],
-                    )
+                    ),
+                    SizedBox(height: 20,),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueGrey),
+                        onPressed: () async {
+                          final googleEmail = await GoogleAuth().signInWithGoogle();
+                          if (googleEmail != null) {
+                            Navigator.push(context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        Home()
+                                )
+                            );
+                          } else {
+                            showSnackBar(context,"Sign-In failed. Navigation to home page aborted.");
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Image.network(
+                                "https://ouch-cdn2.icons8.com/VGHyfDgzIiyEwg3RIll1nYupfj653vnEPRLr0AeoJ8g/rs:fit:456:456/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9wbmcvODg2/LzRjNzU2YThjLTQx/MjgtNGZlZS04MDNl/LTAwMTM0YzEwOTMy/Ny5wbmc.png",
+                                height: 27,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Continue with Google",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],

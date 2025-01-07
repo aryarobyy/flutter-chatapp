@@ -4,12 +4,14 @@ class MySearchBar extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final VoidCallback onPressed;
+  final Function(String)? onSubmitted;
 
   const MySearchBar({
     Key? key,
     required this.controller,
     required this.hintText,
     required this.onPressed,
+    this.onSubmitted
   }) : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class MySearchBar extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              onSubmitted: onSubmitted,
               decoration: InputDecoration(
                 hintText: hintText,
                 border: InputBorder.none,
