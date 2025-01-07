@@ -83,7 +83,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("On cam"),
+        title: const Text("Chat App"),
       ),
       body: currentUserId == null
           ? const Center(child: CircularProgressIndicator())

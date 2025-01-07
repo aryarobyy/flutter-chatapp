@@ -1,6 +1,7 @@
 import 'package:chat_app/pages/profile_page.dart';
+import 'package:chat_app/pages/update_profile.dart';
+import 'package:chat_app/services/auth/auth_gate.dart';
 import 'package:chat_app/services/google_auth.dart';
-import 'package:chat_app/services/navigation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -12,29 +13,44 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  late NavigationService _navigation;
 
-  @override
   Widget build(BuildContext context) {
-    _navigation = GetIt.instance.get<NavigationService>();
     return Scaffold(
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Settings"),
+            const Text("Settings"),
             ElevatedButton(
-                onPressed: () async {
-                  await FirebaseServices().googleSignOut();
-                  _navigation.navigateToRoute('/auth');
-                },
-                child: Text("Log Out")
+              onPressed: () async {
+                await GoogleAuth().googleSignOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AuthGate(),
+                  ),
+                );
+              },
+              child: const Text("Log Out"),
             ),
           ],
         ),
       ),
       body: SafeArea(
-        child: Profile(),
+        child: Navigator(
+          onGenerateRoute: (RouteSettings settings) {
+            Widget page;
+            switch (settings.name) {
+              case '/update-profile':
+                page = const UpdateProfile();
+                break;
+              case '/':
+              default:
+                page = const ProfilePage();
+            }
+            return MaterialPageRoute(builder: (context) => page);
+          },
+        ),
       ),
     );
   }

@@ -69,14 +69,14 @@ class _ContactState extends State<Contact> {
       final userData = await userStream.first;
       final _currentEmail = userData.email;
 
-      if (_searchController.text == _currentEmail){
+      if (_searchController.text.toLowerCase() == _currentEmail){
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('You cannot chat with yourself')),
         );
         return;
       }
       setState(() {
-        _searchQuery = _searchController.text;
+        _searchQuery = _searchController.text.toLowerCase();
         isSearching = true;
       });
     } catch (e) {
@@ -135,10 +135,6 @@ class _ContactState extends State<Contact> {
     }
   }
 
-  // void onChatTap() {
-  //   handleCreateRoom({'uid': user.uid});
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,11 +150,12 @@ class _ContactState extends State<Contact> {
               controller: _searchController,
               hintText: "Search for users by email...",
               onPressed: _onPressed,
+              onSubmitted: (value) {
+                _searchController.text = value;
+                _onPressed();
+              },
             ),
           ),
-          // Expanded(
-          //   child: _buildContact(),
-          // ),
           Expanded(
             child: Column(
               children: [
