@@ -5,6 +5,7 @@ class UserModel {
   final String name;
   final String email;
   final String imageUrl;
+  final String bio;
   late DateTime lastActive;
 
   UserModel({
@@ -12,6 +13,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.imageUrl,
+    required this.bio,
     required this.lastActive,
   });
 
@@ -37,6 +39,7 @@ class UserModel {
       name: _json["name"] ?? "",
       email: _json["email"] ?? "",
       imageUrl: _json["image"] ?? "",
+      bio: _json["bio"] ?? "",
       lastActive: lastActiveDateTime,
     );
   }
@@ -48,12 +51,13 @@ class UserModel {
       "name": name,
       "last_active": lastActive.toIso8601String(),
       "image": imageUrl,
+      "bio": bio,
     };
   }
 
   @override
   String toString() {
-    return 'UserModel(userId: $uid, name: $name, email: $email, image: $imageUrl, lastActive: $lastActive)';
+    return 'UserModel(userId: $uid, name: $name, email: $email, image: $imageUrl, bio: $bio, lastActive: $lastActive)';
   }
 
   String lastDayActive() {

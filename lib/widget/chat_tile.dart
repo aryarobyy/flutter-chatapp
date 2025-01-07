@@ -83,7 +83,7 @@ class ChatTile extends StatelessWidget {
                 }
                 if (!snapshot.hasData || snapshot.data == null) {
                   return const Text(
-                    "No messages yet",
+                    " ",
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   );
                 }
