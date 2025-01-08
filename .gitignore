@@ -46,8 +46,6 @@ app.*.map.json
 /.env
 
 
-
-
 # Firebase configuration files
 /lib/firebase_options.dart
 /ios/Runner/GoogleService-Info.plist
