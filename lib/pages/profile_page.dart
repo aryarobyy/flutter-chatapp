@@ -3,6 +3,7 @@ import 'package:chat_app/pages/update_profile.dart';
 import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/images_service.dart';
 import 'package:chat_app/services/storage_service.dart';
+import 'package:chat_app/widget/button2.dart';
 import 'package:chat_app/widget/text_field_2.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -47,11 +48,13 @@ class _ProfilePageState extends State<ProfilePage> {
         }
         if (snapshots.hasError || !snapshots.hasData) {
           return Center(
-            child: Text("Error fetching user information"),
+            child: Text(
+              "Unable to load user information",
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
           );
         }
         final currUser = snapshots.data;
-        print("Current user: $currUser");
         return StreamBuilder<UserModel>(
           stream: _auth.getUserById(currUser!),
           builder: (context, profileSnapshot) {
@@ -62,73 +65,116 @@ class _ProfilePageState extends State<ProfilePage> {
             }
             if (profileSnapshot.hasError || !profileSnapshot.hasData) {
               return Center(
-                child: Text("Error fetching user profile"),
+                child: Text(
+                  "Unable to load user profile",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
               );
             }
             final user = profileSnapshot.data!;
             final imgUrl = user.imageUrl;
-            print("Image $user");
-            return Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _deviceWidth * 0.03,
-                  vertical: _deviceHeight * 0.02,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: imgUrl.isNotEmpty
-                              ? NetworkImage(imgUrl)
-                              : AssetImage("assets/images/profile.png")
-                          as ImageProvider,
-                          radius: 70,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 40),
-                    Column(
-                      children: [
-                        Text(
-                          user.name,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 32,
 
+            return Scaffold(
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: imgUrl.isNotEmpty
+                                ? NetworkImage(imgUrl)
+                                : AssetImage("assets/images/profile.png")
+                            as ImageProvider,
+                            radius: 70,
                           ),
-                        ),
-                        SizedBox(height: 30,),
-                        Text(
-                            user.email,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 24
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Icon(Icons.person, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Text(
+                            "Name",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        user.name,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          user.bio,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w300
+                      ),
+                      Divider(height: 32, thickness: 1),
+                      Row(
+                        children: [
+                          Icon(Icons.email, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Text(
+                            "Email",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        user.email,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: 28,),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => UpdateProfile(),
-                              ),
-                            );
-                          },
-                          child: Text("Helo"),
-                        )
-                      ],
-                    )
-                  ],
+                      ),
+                      Divider(height: 32, thickness: 1),
+                      Row(
+                        children: [
+                          Icon(Icons.info, color: Colors.grey),
+                          SizedBox(width: 8),
+                          Text(
+                            "About",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        user.bio,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 30,),
+                      SizedBox(
+                        width: 150,
+                        child: MyButton2(
+                            text: "Edit Your Profile",
+                            onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => UpdateProfile()
+                                  )
+                              );
+                            }
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             );

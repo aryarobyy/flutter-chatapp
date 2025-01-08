@@ -6,10 +6,9 @@ import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
 
 
 const String IMAGE_COLLECTION = "images";
@@ -81,6 +80,54 @@ class ImagesService {
       showSnackBar(context, "Upload failed: $e");
       print('Error uploading image: $e');
     }
+  }
+
+  Future<bool> deleteImage(BuildContext context, String imageUrl) async {
+    try {
+      final uri = Uri.parse(imageUrl);
+      final pathSegments = uri.pathSegments;
+      final publicId = pathSegments.last.split('.').first;
+
+      final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
+      final apiKey = dotenv.env['CLOUDINARY_API_KEY']!;
+      final apiSecret = dotenv.env['CLOUDINARY_API_SECRET']!;
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final signature = generateSignature(publicId, timestamp, apiSecret);
+
+      final deleteUri = Uri.parse(
+          'https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+
+      final response = await http.post(
+        deleteUri,
+        body: {
+          'public_id': publicId,
+          'api_key': apiKey,
+          'timestamp': timestamp.toString(),
+          'signature': signature,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        showSnackBar(context, "Image deleted successfully!");
+        return true;
+      } else {
+        showSnackBar(context, "Failed to delete image.");
+        print("Cloudinary delete error: ${response.reasonPhrase}");
+        return false;
+      }
+    } catch (e) {
+      showSnackBar(context, "Delete failed: $e");
+      print('Error deleting image: $e');
+      return false;
+    }
+  }
+
+  String generateSignature(String publicId, int timestamp, String apiSecret) {
+    final params = 'public_id=$publicId&timestamp=$timestamp$apiSecret';
+    final bytes = utf8.encode(params);
+    final digest = sha1.convert(bytes);
+    return digest.toString();
   }
 
 }
