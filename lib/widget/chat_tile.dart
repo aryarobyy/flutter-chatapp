@@ -83,13 +83,14 @@ class ChatTile extends StatelessWidget {
                 }
                 if (!snapshot.hasData || snapshot.data == null) {
                   return const Text(
-                    " ",
+                    "No message yet ",
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   );
                 }
+                print("Latest chat : ${snapshot.data!}");
+
 
                 final latestChat = snapshot.data!.data() as Map<String, dynamic>;
-                print("Latest chat : ${snapshot.data!}");
                 return Text(
                   latestChat['chat'] ?? "",
                   style: const TextStyle(

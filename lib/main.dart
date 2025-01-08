@@ -2,7 +2,6 @@ import 'package:chat_app/firebase_options.dart';
 import 'package:chat_app/services/auth/auth_gate.dart';
 import 'package:chat_app/services/storage_service.dart';
 import 'package:cloudinary_flutter/cloudinary_object.dart';
-import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';

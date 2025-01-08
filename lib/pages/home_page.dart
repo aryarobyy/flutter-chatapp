@@ -44,15 +44,15 @@ class _HomeState extends State<Home> {
             ),
             BottomNavigationBarItem(
               label: "Contact",
-              icon: Icon(Icons.person),
+              icon: Icon(Icons.person_add_alt_1),
             ),
             BottomNavigationBarItem(
-                label: "Setting",
-                icon: Icon(Icons.settings)
+                label: "Profile",
+                icon: Icon(Icons.person)
             ),
           ],
           currentIndex: _selectedItem,
-          selectedItemColor: Colors.amber[800],
+          selectedItemColor: Colors.lightBlue,
           onTap: _onItemTapped,
           ),
         );

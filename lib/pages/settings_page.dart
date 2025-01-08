@@ -20,19 +20,17 @@ class _SettingsState extends State<Settings> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Settings"),
-            ElevatedButton(
-              onPressed: () async {
-                await GoogleAuth().googleSignOut();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AuthGate(),
-                  ),
-                );
-              },
-              child: const Text("Log Out"),
-            ),
+            const Text("Profile"),
+            IconButton(onPressed: () async {
+              await GoogleAuth().googleSignOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AuthGate(),
+                ),
+              );
+            }, icon: Icon(Icons.logout)
+            )
           ],
         ),
       ),

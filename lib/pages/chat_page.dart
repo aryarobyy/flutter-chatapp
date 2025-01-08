@@ -88,6 +88,8 @@ class _ChatScreenState extends State<ChatPage> {
                         controller: messageController,
                         hintText: "Type a message...",
                         obscureText: false,
+                        maxLine: 3,
+                        minLine: 1,
                       ),
                     ),
                     IconButton(
@@ -120,9 +122,10 @@ class _ChatScreenState extends State<ChatPage> {
           return const Center(child: Text("No messages yet"));
         }
 
-        final messages = snapshot.data!.docs;
+        final messages = snapshot.data!.docs.reversed.toList();
 
         return ListView.builder(
+          reverse: true,
           itemCount: messages.length,
           itemBuilder: (context, index) {
             final message = messages[index].data() as Map<String, dynamic>;
@@ -134,6 +137,9 @@ class _ChatScreenState extends State<ChatPage> {
               final nextMsg = messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
+
+            String fullText = message['chat'] ?? "";
+            bool isLongText = fullText.length > 255;
 
             return BubbleSpecialThree(
               text: message['chat'] ?? "",
