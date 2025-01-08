@@ -7,6 +7,8 @@ class MyTextField2 extends StatelessWidget {
   final bool obscureText;
   final TextCapitalization textCapitalization;
   final TextInputType inputType;
+  final int? maxLine;
+  final int? minLine;
 
   const MyTextField2({
     Key? key,
@@ -16,6 +18,8 @@ class MyTextField2 extends StatelessWidget {
     this.obscureText = false,
     this.textCapitalization = TextCapitalization.none,
     required this.inputType,
+    this.maxLine = 1,
+    this.minLine = 1,
   }) : super(key: key);
 
   @override
@@ -26,10 +30,12 @@ class MyTextField2 extends StatelessWidget {
         enabled: true,
         controller: controller,
         textCapitalization: textCapitalization,
-        maxLength: 32,
-        maxLines: 1,
+        keyboardType: inputType == TextInputType.multiline
+            ? TextInputType.multiline
+            : inputType,
+        maxLines: maxLine,
+        minLines: minLine,
         obscureText: obscureText,
-        keyboardType: inputType,
         textAlign: TextAlign.start,
         style: const TextStyle(
           color: Colors.black,

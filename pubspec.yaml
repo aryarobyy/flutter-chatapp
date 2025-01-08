@@ -35,8 +35,6 @@ dependencies:
   http: ^1.2.2
   google_fonts: ^6.2.1
   get_it: ^7.2.0
-  email_auth: ^2.0.0
-  email_otp: ^3.0.2
   shared_preferences: ^2.3.5
 
 dev_dependencies:

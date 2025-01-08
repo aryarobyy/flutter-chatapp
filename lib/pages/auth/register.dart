@@ -5,7 +5,6 @@ import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/otp.dart';
 import 'package:chat_app/widget/text_field.dart';
-import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -37,10 +36,6 @@ class _RegisterState extends State<Register> {
     passwordController.dispose();
     nameController.dispose();
     super.dispose();
-  }
-
-  void handleRegister() async {
-
   }
 
   void register() async {

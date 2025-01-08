@@ -4,19 +4,26 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
-  // final String prefixIcon;
-  const MyTextField(
-      {super.key,
-        required this.controller,
-        required this.hintText,
-        required this.obscureText,
-      });
+  final int? maxLine;
+  final int? minLine;
+
+  const MyTextField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    required this.obscureText,
+    this.maxLine = 1,
+    this.minLine = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      maxLines: maxLine,
+      minLines: minLine,
+      keyboardType: maxLine != 1 ? TextInputType.multiline : TextInputType.text,
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         enabledBorder: OutlineInputBorder(
@@ -42,6 +49,5 @@ class MyTextField extends StatelessWidget {
       ),
       cursorColor: Colors.blueAccent,
     );
-
   }
 }

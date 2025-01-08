@@ -171,7 +171,6 @@ class AuthMethod {
       if (user == null) {
         throw Exception("No user is currently logged in");
       }
-
       return user.uid;
     } catch (e) {
       log("Error in getCurrentUserId: $e");
