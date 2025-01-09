@@ -86,32 +86,28 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<void> handleSendChat() async {
     if (messageController.text.isNotEmpty) {
-      final _currUser = await _auth.getCurrentUserId();
-      final receiverData = await _auth.getUserById(widget.receiverId).first;
-      final List<String> member = [_currUser, widget.receiverId];
+      try {
+        final currentUserId = await _auth.getCurrentUserId();
+        final List<String> members = [currentUserId, widget.receiverId];
 
-      await _chatService.sendChat(
-        message: messageController.text,
-        member: member,
-      );
-
-      final isOtherUserOnPage = await _isOtherUserOnChatPage(widget.receiverId);
-      print("ReceverId: ${widget.receiverId}");
-      print("CurrentUserId: ${_currUser}");
-
-      if (!isOtherUserOnPage && _currUser != widget.receiverId) {
-        print("Sending notification to ${receiverData.name}");
-        NotificationService.showNotification(
-          receiverId: widget.receiverId,
-          title: receiverData.name,
+        await _chatService.sendChat(
           message: messageController.text,
-          roomId: widget.roomId ?? '',
+          member: members,
         );
-      } else {
-        print("Notification skipped: Receiver is on chat page or current user is the sender.");
-      }
+        print("ReceiverId: ${widget.receiverId}");
 
-      messageController.clear();
+        // await NotificationService.showNotification(
+        //   receiverId: widget.receiverId,
+        //   title: "New Message",
+        //   message: messageController.text,
+        //   roomId: widget.roomId ?? '',
+        // );
+
+        messageController.clear();
+
+      } catch (e) {
+        print("Error in handleSendChat: $e");
+      }
     }
   }
 

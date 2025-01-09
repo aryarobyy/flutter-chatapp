@@ -1,6 +1,5 @@
 import 'package:chat_app/model/chat_model.dart';
 import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

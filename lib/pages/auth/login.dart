@@ -5,8 +5,6 @@ import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
 import 'package:chat_app/widget/text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-
 
 class Login extends StatefulWidget {
   final void Function()? onTap;
