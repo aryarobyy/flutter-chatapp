@@ -18,6 +18,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId = "com.chat.app"

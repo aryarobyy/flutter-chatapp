@@ -1,5 +1,6 @@
 import 'package:chat_app/model/chat_model.dart';
 import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/notification_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,21 @@ class ChatService extends ChangeNotifier {
     return roomId;
   }
 
+  static bool isOnChatPage = false;
+  static String currentChatRoomId = '';
+
+  static void enterChatPage(String roomId) {
+    isOnChatPage = true;
+    currentChatRoomId = roomId;
+    print('Entered chat page: $isOnChatPage, Room: $currentChatRoomId');
+  }
+
+  static void leaveChatPage() {
+    isOnChatPage = false;
+    currentChatRoomId = '';
+    print('Left chat page: $isOnChatPage');
+  }
+
   Future<void> sendChat({
     required String message,
     required List<String> member,
@@ -97,6 +113,32 @@ class ChatService extends ChangeNotifier {
         .doc(roomId)
         .collection(CHAT_COLLECTION)
         .add(newChat.toMap());
+
+    // print("Current page state - IsOnChatPage: ${ChatService.isOnChatPage}, CurrentRoom: ${ChatService.currentChatRoomId}, MessageRoom: $roomId");
+    //
+    // for (String memberId in member) {
+    //   if (memberId != currentUserId) {
+    //     print("Not currentUserId: $memberId");
+    //     final receiverData = await AuthMethod().getUserById(memberId).first;
+    //
+    //     final isOtherUserOnChatPage =
+    //         ChatService.isOnChatPage && ChatService.currentChatRoomId == roomId;
+    //
+    //     if (!isOtherUserOnChatPage) {
+    //       final senderName = _auth.currentUser?.displayName ?? currentEmail;
+    //       final title = isGroup ? roomName ?? "Group Chat" : senderName;
+    //
+    //       print("Sending notification to: ${receiverData.name} for room: $roomId");
+    //       await NotificationService.showNotification(
+    //         title: title,
+    //         message: message,
+    //         roomId: roomId,
+    //       );
+    //     } else {
+    //       print("Skipping notification for ${receiverData.name} - user is on chat page");
+    //     }
+    //   }
+    // }
   }
 
 
@@ -147,6 +189,39 @@ class ChatService extends ChangeNotifier {
       return {};
     }
   }
+
+  // void listenToChats(String roomId) {
+  //   final currentUserId = _auth.currentUser!.uid;
+  //
+  //   _fireStore
+  //       .collection(ROOM_COLLECTION)
+  //       .doc(roomId)
+  //       .collection(CHAT_COLLECTION)
+  //       .orderBy('time', descending: true)
+  //       .limit(1)
+  //       .snapshots()
+  //       .listen((snapshot) {
+  //     if (snapshot.docs.isNotEmpty) {
+  //       final latestChat = snapshot.docs.first;
+  //       final chatData = latestChat.data();
+  //
+  //       if (chatData['senderId'] != currentUserId) {
+  //         getRoomById(roomId).then((roomData) {
+  //           final isGroup = roomData['roomType'] == 'group';
+  //           final title = isGroup
+  //               ? roomData['roomName'] ?? "Group Chat"
+  //               : chatData['senderEmail'];
+  //
+  //           NotificationService.showNotification(
+  //             title: title,
+  //             message: chatData['chat'],
+  //             roomId: roomId,
+  //           );
+  //         });
+  //       }
+  //     }
+  //   });
+  // }
 
   Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
     return _fireStore

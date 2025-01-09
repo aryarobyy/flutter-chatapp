@@ -1,50 +1,124 @@
 import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/chat_service.dart';
+import 'package:chat_app/services/notification_service.dart';
 import 'package:chat_app/widget/text_field.dart';
 import 'package:chat_bubbles/bubbles/bubble_special_three.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverId;
   final String? roomId;
-  const ChatPage({super.key,
+  const ChatPage({
+    super.key,
     required this.receiverId,
-    required this.roomId}
-      );
+    required this.roomId,
+  });
 
   @override
-  State<ChatPage> createState() => _ChatScreenState();
+  State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatScreenState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final TextEditingController messageController = TextEditingController();
-  final ChatService _chatService = ChatService();
+  late final ChatService _chatService;
   final AuthMethod _auth = AuthMethod();
   final FlutterSecureStorage FStorage = FlutterSecureStorage();
+  bool isPageVisible = true;
+  bool isAppActive = true;
 
   @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
-  }
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _chatService = Provider.of<ChatService>(context, listen: false);
+    _initializeNotifications();
 
-  void handleSendChat() async {
-    if (messageController.text.isNotEmpty) {
-      final _currUser = await _auth.getCurrentUserId();
-      print("Current User: $_currUser");
-      final List<String> member = [ _currUser, widget.receiverId];
-      await _chatService.sendChat(
-          message: messageController.text,
-          member: member
-      );
-      messageController.clear();
+    if (widget.roomId != null) {
+      _updateUserChatStatus(true);
+      ChatService.enterChatPage(widget.roomId!);
+      print("Entered chat page: ${widget.roomId}");
     }
   }
 
   @override
+  void dispose() {
+    _updateUserChatStatus(false);
+    ChatService.leaveChatPage();
+    print("Left chat page");
+    WidgetsBinding.instance.removeObserver(this);
+    messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      isAppActive = state == AppLifecycleState.resumed;
+      isPageVisible = isAppActive && mounted;
+    });
+  }
+
+  Future<void> _updateUserChatStatus(bool isOnChatPage) async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+      'isOnChatPage': isOnChatPage,
+      'currentChatRoom': isOnChatPage ? widget.roomId : null,
+    });
+  }
+
+  Future<bool> _isOtherUserOnChatPage(String userId) async {
+    final snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final data = snapshot.data();
+    if (data == null) return false;
+
+    final isOnChatPage = data['isOnChatPage'] ?? false;
+    final currentChatRoom = data['currentChatRoom'];
+    return isOnChatPage && currentChatRoom == widget.roomId;
+  }
+
+  Future<void> _initializeNotifications() async {
+    await NotificationService.initializeNotification();
+  }
+
+  Future<void> handleSendChat() async {
+    if (messageController.text.isNotEmpty) {
+      final _currUser = await _auth.getCurrentUserId();
+      final receiverData = await _auth.getUserById(widget.receiverId).first;
+      final List<String> member = [_currUser, widget.receiverId];
+
+      await _chatService.sendChat(
+        message: messageController.text,
+        member: member,
+      );
+
+      final isOtherUserOnPage = await _isOtherUserOnChatPage(widget.receiverId);
+      print("ReceverId: ${widget.receiverId}");
+      print("CurrentUserId: ${_currUser}");
+
+      if (!isOtherUserOnPage && _currUser != widget.receiverId) {
+        print("Sending notification to ${receiverData.name}");
+        NotificationService.showNotification(
+          receiverId: widget.receiverId,
+          title: receiverData.name,
+          message: messageController.text,
+          roomId: widget.roomId ?? '',
+        );
+      } else {
+        print("Notification skipped: Receiver is on chat page or current user is the sender.");
+      }
+
+      messageController.clear();
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    print("TESTTTT");
     return FutureBuilder<String>(
       future: _auth.getCurrentUserId(),
       builder: (context, snapshot) {

@@ -82,12 +82,14 @@ class StorageService with ChangeNotifier {
       }
       final String uid = currentUser.uid;
 
-      String filePath = 'users/$uid.${ image.path.split('.').last.toLowerCase()}';
+      String filePath =
+          'users/$uid.${image.path.split('.').last.toLowerCase()}';
       UploadTask uploadTask = firebaseStorage.ref(filePath).putFile(file);
       logger.d("Generated file path: $filePath");
 
       uploadTask.snapshotEvents.listen((snapshot) {
-        logger.d("Upload progress: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}");
+        logger.d(
+            "Upload progress: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}");
         logger.d("Upload state: ${snapshot.state}");
       }).onError((error) {
         logger.e("Error during upload: $error");
@@ -99,7 +101,10 @@ class StorageService with ChangeNotifier {
       String downloadUrl = await firebaseStorage.ref(filePath).getDownloadURL();
       logger.d("Download URL: $downloadUrl");
 
-      await _fireStore.collection("users").doc(uid).update({'image': downloadUrl});
+      await _fireStore
+          .collection("users")
+          .doc(uid)
+          .update({'image': downloadUrl});
       _imgUrls.add(downloadUrl);
       notifyListeners();
       showSnackBar(context, "Image uploaded successfully!");
@@ -112,7 +117,4 @@ class StorageService with ChangeNotifier {
       notifyListeners();
     }
   }
-
-
-
 }
