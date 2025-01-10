@@ -112,32 +112,6 @@ class ChatService extends ChangeNotifier {
         .doc(roomId)
         .collection(CHAT_COLLECTION)
         .add(newChat.toMap());
-
-    // print("Current page state - IsOnChatPage: ${ChatService.isOnChatPage}, CurrentRoom: ${ChatService.currentChatRoomId}, MessageRoom: $roomId");
-    //
-    // for (String memberId in member) {
-    //   if (memberId != currentUserId) {
-    //     print("Not currentUserId: $memberId");
-    //     final receiverData = await AuthMethod().getUserById(memberId).first;
-    //
-    //     final isOtherUserOnChatPage =
-    //         ChatService.isOnChatPage && ChatService.currentChatRoomId == roomId;
-    //
-    //     if (!isOtherUserOnChatPage) {
-    //       final senderName = _auth.currentUser?.displayName ?? currentEmail;
-    //       final title = isGroup ? roomName ?? "Group Chat" : senderName;
-    //
-    //       print("Sending notification to: ${receiverData.name} for room: $roomId");
-    //       await NotificationService.showNotification(
-    //         title: title,
-    //         message: message,
-    //         roomId: roomId,
-    //       );
-    //     } else {
-    //       print("Skipping notification for ${receiverData.name} - user is on chat page");
-    //     }
-    //   }
-    // }
   }
 
 

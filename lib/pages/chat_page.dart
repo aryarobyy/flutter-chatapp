@@ -96,12 +96,15 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         );
         print("ReceiverId: ${widget.receiverId}");
 
-        // await NotificationService.showNotification(
-        //   receiverId: widget.receiverId,
-        //   title: "New Message",
-        //   message: messageController.text,
-        //   roomId: widget.roomId ?? '',
-        // );
+        //versi gratis gabisa
+        // if(widget.receiverId != currentUserId){
+        //   await NotificationService.showNotification(
+        //     receiverId: widget.receiverId,
+        //     title: "New Message",
+        //     message: messageController.text,
+        //     roomId: widget.roomId ?? '',
+        //   );
+        // }
 
         messageController.clear();
 
