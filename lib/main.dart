@@ -18,11 +18,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     print("Firebase already initialized in background handler");
     return;
   }
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
   await AwesomeNotifications().createNotification(
     content: NotificationContent(
       id: DateTime.now().millisecondsSinceEpoch.remainder(100000),

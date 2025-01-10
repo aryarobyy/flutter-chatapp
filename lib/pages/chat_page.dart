@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
@@ -42,6 +43,23 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
       ChatService.enterChatPage(widget.roomId!);
       print("Entered chat page: ${widget.roomId}");
     }
+    AwesomeNotifications().setListeners(
+      onActionReceivedMethod: (ReceivedAction receivedAction) async {
+        if (receivedAction.payload != null) {
+          String? roomId = receivedAction.payload!['roomId'];
+          if (roomId != null) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ChatPage(
+                    receiverId: widget.receiverId,
+                    roomId: roomId
+                ),
+              ),
+            );
+          }
+        }
+      },
+    );
   }
 
   @override
@@ -96,15 +114,14 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         );
         print("ReceiverId: ${widget.receiverId}");
 
-        //versi gratis gabisa
-        // if(widget.receiverId != currentUserId){
-        //   await NotificationService.showNotification(
-        //     receiverId: widget.receiverId,
-        //     title: "New Message",
-        //     message: messageController.text,
-        //     roomId: widget.roomId ?? '',
-        //   );
-        // }
+        if(widget.receiverId != currentUserId){
+          await NotificationService.showNotification(
+            receiverId: widget.receiverId,
+            title: "New Message",
+            message: messageController.text,
+            roomId: widget.roomId ?? '',
+          );
+        }
 
         messageController.clear();
 

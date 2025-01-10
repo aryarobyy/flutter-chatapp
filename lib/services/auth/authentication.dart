@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:chat_app/model/user_model.dart';
+import 'package:chat_app/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -244,6 +245,7 @@ class AuthMethod {
 
   Future<void> signOut() async {
     await FStorage.delete(key: 'uid');
+    await NotificationService.dispose();
     await _auth.signOut();
   }
 }

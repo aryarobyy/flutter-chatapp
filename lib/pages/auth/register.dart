@@ -3,9 +3,7 @@ import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/google_auth.dart';
 import 'package:chat_app/widget/button.dart';
 import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/widget/otp.dart';
 import 'package:chat_app/widget/text_field.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -26,7 +24,6 @@ class _RegisterState extends State<Register> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
   bool isLoading = false;
   
 
@@ -107,11 +104,11 @@ class _RegisterState extends State<Register> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      height: 40,
+                      height: 20,
                     ),
-                    const Icon(
-                      Icons.message_rounded,
-                      size: 80,
+                    SizedBox(
+                        height: 180,
+                        child: Image.asset("assets/images/logo.png")
                     ),
                     const Text(
                       "Buat Akun",
@@ -120,7 +117,7 @@ class _RegisterState extends State<Register> {
                       ),
                     ),
                     const SizedBox(
-                      height: 30,
+                      height: 20,
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +139,7 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         SizedBox(
-                          height: 26,
+                          height: 20,
                         ),
                         const Text(
                           "Nama",
@@ -158,7 +155,7 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         SizedBox(
-                          height: 26,
+                          height: 20,
                         ),
                         const Text(
                           "Password",
@@ -206,7 +203,7 @@ class _RegisterState extends State<Register> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueGrey),
                         onPressed: () async {
-                          final googleEmail = await GoogleAuth().signInWithGoogle();
+                          final googleEmail = await GoogleAuth().signUpWithGoogle();
                           if (googleEmail != null) {
                             Navigator.push(context,
                                 MaterialPageRoute(

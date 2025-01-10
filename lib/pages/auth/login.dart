@@ -70,9 +70,9 @@ class _LoginState extends State<Login> {
                     SizedBox(
                       height: 40,
                     ),
-                    const Icon(
-                      Icons.message_rounded,
-                      size: 80,
+                    SizedBox(
+                      height: 180,
+                      child: Image.asset("assets/images/logo.png")
                     ),
                     const Text(
                       "Selamat datang",

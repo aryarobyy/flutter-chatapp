@@ -4,7 +4,6 @@ import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/images_service.dart';
 import 'package:chat_app/services/storage_service.dart';
 import 'package:chat_app/widget/button2.dart';
-import 'package:chat_app/widget/text_field_2.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

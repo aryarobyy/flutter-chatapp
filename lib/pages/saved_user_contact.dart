@@ -1,7 +1,9 @@
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
+import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/services/auth/authentication.dart';
 import 'package:chat_app/services/chat_service.dart';
+import 'package:chat_app/widget/button2.dart';
 import 'package:chat_app/widget/chat_tile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +97,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
     );
   }
 
-  @override
+
   @override
   Widget _contactUi(BuildContext context) {
     Stream<QuerySnapshot> allRoom = _chat.getUserRoom(currentUserId!);
@@ -111,8 +113,39 @@ class _SavedUserContactState extends State<SavedUserContact> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("No room yet"));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "You don't have any chat history",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                SizedBox(
+                  width: 200,
+                  height: 55,
+                  child: MyButton2(
+                    text: "Add Contact",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Home(initialTab: 1)),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
         }
+
 
         final rooms = snapshot.data!.docs
             .map((doc) => doc.data() as Map<String, dynamic>)

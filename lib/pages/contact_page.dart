@@ -223,7 +223,7 @@ class _ContactState extends State<Contact> {
     print("Stored rooms: $storedRooms");
 
     if (storedRooms.isEmpty) {
-      return const Center(child: Text("No chat history"));
+      return const Center(child: Text("No Search history"));
     }
 
     return ListView.builder(

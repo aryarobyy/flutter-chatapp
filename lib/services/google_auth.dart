@@ -9,12 +9,24 @@ class GoogleAuth {
 
   Future<String?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleSignInAccount = await googleSignIn
-          .signIn();
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
       if (googleSignInAccount != null) {
         final GoogleSignInAuthentication googleSignInAuthentication =
         await googleSignInAccount.authentication;
+
+        final String? userEmail = googleSignInAccount.email;
+
+        final QuerySnapshot querySnapshot = await _fireStore
+            .collection('users')
+            .where('email', isEqualTo: userEmail)
+            .get();
+
+        if (querySnapshot.docs.isEmpty) {
+          print("Email not registered in Firestore");
+          await googleSignIn.signOut();
+          return null;
+        }
 
         final AuthCredential authCredential = GoogleAuthProvider.credential(
           accessToken: googleSignInAuthentication.accessToken,
@@ -24,33 +36,30 @@ class GoogleAuth {
         await auth.signInWithCredential(authCredential);
 
         if (auth.currentUser != null) {
-          final String? userEmail = auth.currentUser!.email;
-
-          final QuerySnapshot querySnapshot = await _fireStore
-              .collection('users')
-              .where('email', isEqualTo: userEmail)
-              .get();
-
-          if (querySnapshot.docs.isNotEmpty) {
-            return userEmail;
-          } else {
-            await auth.signOut();
-            await googleSignIn.signOut();
-            return null;
-          }
+          print("Login success");
+          return userEmail;
         } else {
           print("Google Sign-In failed: User is null");
         }
       }
     } on FirebaseAuthException catch (e) {
       print("Error during Google Sign-In: $e");
+
+      if (auth.currentUser != null) {
+        try {
+          await auth.currentUser?.delete();
+          print("User removed from Firebase Authentication");
+        } catch (deleteError) {
+          print("Error deleting user: $deleteError");
+        }
+      }
     } catch (e) {
       print("Error during Google Sign-In: $e");
       return null;
     }
   }
 
-    Future<String> signUpWithGoogle() async {
+  Future<String> signUpWithGoogle() async {
     try {
       final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
