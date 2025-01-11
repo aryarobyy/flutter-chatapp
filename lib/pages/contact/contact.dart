@@ -1,4 +1,5 @@
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/widget/button2.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/component/search_bar.dart';
 import 'package:chat_app/model/user_model.dart';

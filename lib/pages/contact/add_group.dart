@@ -12,8 +12,10 @@ class _AddGroupState extends State<AddGroup> {
   String? _currentUserId;
   String? _selectedUserId;
   final AuthService _auth = AuthService();
+  final ChatService _chat = ChatService();
+  String _searchQuery = '';
+  bool _isSearching = false;
 
-  final List<String> _searchResults = ["User 1", "User 2", "User 3"];
   final List<String> _addedUsers = [];
   LocalStorage? localStorage;
   bool isStorageInitialized = false;
@@ -21,7 +23,6 @@ class _AddGroupState extends State<AddGroup> {
   @override
   void initState() {
     super.initState();
-    _initializeStorage();
     _initializeUserId();
   }
 
@@ -36,26 +37,22 @@ class _AddGroupState extends State<AddGroup> {
     }
   }
 
-  Future<void> _initializeStorage() async {
-    try {
-      final storage = LocalStorage('group_add');
-      final isReady = await storage.ready;
-      if (isReady) {
-        setState(() {
-          localStorage = storage;
-          isStorageInitialized = true;
-        });
-      } else {
-        print("Failed to initialize LocalStorage");
-      }
-    } catch (e) {
-      print("Error initializing storage: $e");
-    }
-  }
-
-  void _onPressed() {
+  void _onPressed() async {
     try {
       final user = _auth.getUserById(_currentUserId as String);
+      final userData = await user.first;
+      final _currentEmail = userData.email;
+
+      if (_searchController.text.toLowerCase() == _currentEmail) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You cannot add yourself')),
+        );
+        return;
+      }
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+        _isSearching = true;
+      });
     } catch (e) {
       print("Error $e");
     }
@@ -75,6 +72,37 @@ class _AddGroupState extends State<AddGroup> {
     });
   }
 
+  Future<void> handleCreateRoom({required List<String> userIds, bool isGroup = false}) async {
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not initialized')),
+      );
+      return;
+    }
+    try {
+      final currentUserId = await _auth.getCurrentUserId();
+      print("currentUserId: $currentUserId");
+
+      List<String> members = [currentUserId, ...userIds];
+      print("Members: $members");
+
+      await _chat.createRoom(
+        member: members,
+        isGroup: isGroup,
+      );
+      if (!mounted) return;
+
+    } catch (e) {
+      print('Error creating room: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create chat room: ${e.toString()}')),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,19 +112,37 @@ class _AddGroupState extends State<AddGroup> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MySearchBar(
-                controller: _searchController,
-                hintText: "Search for users by email...",
-                onPressed: _onPressed,
-                onSubmitted: (value) {
-                  _searchController.text = value;
-                  _onPressed();
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: MySearchBar(
+                      controller: _searchController,
+                      hintText: "Search for users by email...",
+                      onPressed: _onPressed,
+                      onSubmitted: (value) {
+                        _searchController.text = value;
+                        _onPressed();
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SearchContact()),
+                      );
+                      // localStorage!.deleteItem(_addedUsers as String);
+                      // setState(() {});
+                    },
+                    icon: Icon(Icons.cancel_outlined),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Expanded(
                 flex: 1,
-                child: _buildSearchResults(context),
+                child: _build(context),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -110,76 +156,78 @@ class _AddGroupState extends State<AddGroup> {
     );
   }
 
-  Widget _buildSearchResults(BuildContext context) {
+  Widget _build(BuildContext context){
     return Container(
-      padding: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: [
-          BoxShadow(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             blurRadius: 6,
             offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Search Results",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
             ),
-          ),
-          const SizedBox(height: 8),
-
-          // List of search results
-          Expanded(
-            child: _searchResults.isEmpty
-                ? Center(
-                    child: Text(
-                      "No results found.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _searchResults.length,
-                    itemBuilder: (context, index) {
-                      final user = _searchResults[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blueAccent,
-                          child: Text(
-                            user[0].toUpperCase(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(
-                          user,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.add_circle_outline),
-                          color: Colors.green,
-                          onPressed: () => _addUser(user),
-                        ),
-                      );
-                    },
-                  ),
-          ),
         ],
       ),
+      child: _buildSearchResults(context),
+    );
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    if (_searchQuery.isEmpty) {
+      return Center(child: Text("No user searched"));
+    }
+    return StreamBuilder<UserModel?>(
+      stream: _auth.getUserByEmail(_searchQuery.toLowerCase()),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: Text("No user found."));
+        }
+
+        final UserModel user = snapshot.data!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Search Results",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blueAccent,
+                child: Text(
+                  user.name[0].toUpperCase(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+              title: Text(
+                user.name,
+                style: const TextStyle(fontSize: 16),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                color: Colors.green,
+                onPressed: () => _addUser(user.uid),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildAddedUsers(BuildContext context) {
+
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -197,54 +245,85 @@ class _AddGroupState extends State<AddGroup> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Added Participants",
+            "Added Members",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-
-          // List of added users
           Expanded(
             child: _addedUsers.isEmpty
                 ? Center(
-                    child: Text(
-                      "No participants added.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
+              child: Text(
+                "No participants added.",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
                 : ListView.builder(
-                    itemCount: _addedUsers.length,
-                    itemBuilder: (context, index) {
-                      final user = _addedUsers[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blueAccent,
-                          child: Text(
-                            user[0].toUpperCase(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(
-                          user,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          color: Colors.red,
-                          onPressed: () => _removeUser(user),
-                        ),
+              itemCount: _addedUsers.length,
+              itemBuilder: (context, index) {
+                final userId = _addedUsers[index];
+                return FutureBuilder<UserModel?>(
+                  future: _auth.getUserById(userId).first,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const ListTile(
+                        title: Text("Loading..."),
                       );
-                    },
-                  ),
+                    }
+                    if (snapshot.hasError) {
+                      return const ListTile(
+                        title: Text("Error loading user."),
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const ListTile(
+                        title: Text("User not found."),
+                      );
+                    }
+
+                    final user = snapshot.data!;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blueAccent,
+                        child: Text(
+                          user.name[0].toUpperCase(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      title: Text(
+                        user.name,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        color: Colors.red,
+                        onPressed: () => _removeUser(userId),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: MyButton2(
+              text: "Create Group",
+              onPressed: () => handleCreateRoom(
+                userIds: _addedUsers,
+                isGroup: true, // Indicates a group creation
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+
 }
