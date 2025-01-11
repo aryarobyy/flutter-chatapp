@@ -1,15 +1,4 @@
-import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/pages/profile_page.dart';
-import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/images_service.dart';
-import 'package:chat_app/services/storage_service.dart';
-import 'package:chat_app/widget/button.dart';
-import 'package:chat_app/widget/button2.dart';
-import 'package:chat_app/widget/text_field_2.dart';
-import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
-import 'package:provider/provider.dart';
+part of 'profile.dart';
 
 class UpdateProfile extends StatefulWidget {
   const UpdateProfile({super.key});
@@ -22,7 +11,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
   late double _deviceHeight;
   late double _deviceWidth;
   final ImagesService _imagesService = ImagesService();
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
@@ -44,13 +33,12 @@ class _UpdateProfileState extends State<UpdateProfile> {
         return;
       }
 
-      final uploaded = {
-        'image': res
-      };
+      final uploaded = {'image': res};
 
       final uploadRes = await _auth.updateUser(uploaded);
-      if (uploadRes.imageUrl != null ){
-        final deleteImage = await _imagesService.deleteImage(context, uploadRes.imageUrl);
+      if (uploadRes.imageUrl != null) {
+        final deleteImage =
+            await _imagesService.deleteImage(context, uploadRes.imageUrl);
         print("Image deleted: $deleteImage");
         return;
       }
@@ -60,9 +48,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
     }
   }
 
-
   void handleSubmit() async {
-    if (_emailController.text.isEmpty || _bioController.text.isEmpty || _nameController.text.isEmpty) {
+    if (_emailController.text.isEmpty ||
+        _bioController.text.isEmpty ||
+        _nameController.text.isEmpty) {
       showSnackBar(context, "No one get update");
       Navigator.push(
         context,
@@ -72,7 +61,8 @@ class _UpdateProfileState extends State<UpdateProfile> {
       );
     }
     try {
-      if (!isValidEmail(_emailController.text.trim()) && _emailController.text.trim().isNotEmpty) {
+      if (!isValidEmail(_emailController.text.trim()) &&
+          _emailController.text.trim().isNotEmpty) {
         showSnackBar(context, "Wrong format email");
         return;
       }
@@ -84,9 +74,15 @@ class _UpdateProfileState extends State<UpdateProfile> {
       final currentBio = currentUser.bio ?? '';
 
       final uploadData = {
-        'name': _nameController.text.trim().isEmpty ? currentName : _nameController.text.trim(),
-        'email': _emailController.text.trim().isEmpty ? currentEmail : _emailController.text.toLowerCase(),
-        'bio' : _bioController.text.trim().isEmpty ? currentBio : _bioController.text.trim()
+        'name': _nameController.text.trim().isEmpty
+            ? currentName
+            : _nameController.text.trim(),
+        'email': _emailController.text.trim().isEmpty
+            ? currentEmail
+            : _emailController.text.toLowerCase(),
+        'bio': _bioController.text.trim().isEmpty
+            ? currentBio
+            : _bioController.text.trim()
       };
 
       await _auth.updateUser(uploadData);
@@ -103,12 +99,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
     }
   }
 
-
   bool isValidEmail(String email) {
     final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     return regex.hasMatch(email);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +160,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                           backgroundImage: imgUrl.isNotEmpty
                               ? NetworkImage(imgUrl)
                               : AssetImage("assets/images/profile.png")
-                          as ImageProvider,
+                                  as ImageProvider,
                           radius: 70,
                         ),
                         Positioned(
@@ -234,6 +228,4 @@ class _UpdateProfileState extends State<UpdateProfile> {
       },
     );
   }
-
-
 }

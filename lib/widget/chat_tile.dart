@@ -1,5 +1,5 @@
 import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:flutter/material.dart';
 
@@ -44,7 +44,7 @@ class ChatTile extends StatelessWidget {
           ),
         ),
         subtitle: FutureBuilder<String>(
-          future: AuthMethod().getCurrentUserId(),
+          future: AuthService().getCurrentUserId(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Text(

@@ -11,12 +11,12 @@ final logger = Logger();
 
 const String USER_COLLECTION = "users";
 
-class AuthMethod {
+class AuthService {
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FStorage = FlutterSecureStorage();
 
-  AuthMethod ();
+  AuthService();
 
   bool isValidEmail(String email) {
     final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');

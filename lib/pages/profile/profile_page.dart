@@ -1,11 +1,4 @@
-import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/pages/update_profile.dart';
-import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/images_service.dart';
-import 'package:chat_app/services/storage_service.dart';
-import 'package:chat_app/widget/button2.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+part of 'profile.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,7 +10,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late double _deviceHeight;
   late double _deviceWidth;
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
 
   @override
   void initState() {
@@ -36,6 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: _buildProfileUi(),
     );
   }
+
   Widget _buildProfileUi() {
     return StreamBuilder<String>(
       stream: _auth.getCurrentUserIdStream(),
@@ -76,7 +70,8 @@ class _ProfilePageState extends State<ProfilePage> {
             return Scaffold(
               body: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 24.0),
                   child: Column(
                     children: [
                       Stack(
@@ -85,7 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             backgroundImage: imgUrl.isNotEmpty
                                 ? NetworkImage(imgUrl)
                                 : AssetImage("assets/images/profile.png")
-                            as ImageProvider,
+                                    as ImageProvider,
                             radius: 70,
                           ),
                         ],
@@ -159,18 +154,19 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(height: 30,),
+                      SizedBox(
+                        height: 30,
+                      ),
                       SizedBox(
                         width: 150,
                         child: MyButton2(
                             text: "Edit Your Profile",
                             onPressed: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => UpdateProfile()
-                                  )
-                              );
-                            }
-                        ),
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UpdateProfile()));
+                            }),
                       )
                     ],
                   ),
@@ -182,5 +178,4 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
-
 }

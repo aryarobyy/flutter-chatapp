@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/pages/auth/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -54,22 +53,22 @@ class StorageService with ChangeNotifier {
 
   Future<void> uploadImage(BuildContext context) async {
     _isUploading = true;
-    logger.d("🐛 Starting image upload");
+    print("🐛 Starting image upload");
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) {
-      logger.d("No image selected");
+      print("No image selected");
       _isUploading = false;
       notifyListeners();
       return;
     }
 
-    logger.d("Image selected: ${image.path}");
+    print("Image selected: ${image.path}");
     File file = File(image.path);
 
     if (!(await file.exists())) {
-      logger.e("File does not exist at path: ${file.path}");
+      print("File does not exist at path: ${file.path}");
       _isUploading = false;
       notifyListeners();
       return;
@@ -85,21 +84,21 @@ class StorageService with ChangeNotifier {
       String filePath =
           'users/$uid.${image.path.split('.').last.toLowerCase()}';
       UploadTask uploadTask = firebaseStorage.ref(filePath).putFile(file);
-      logger.d("Generated file path: $filePath");
+      print("Generated file path: $filePath");
 
       uploadTask.snapshotEvents.listen((snapshot) {
-        logger.d(
+        print(
             "Upload progress: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}");
-        logger.d("Upload state: ${snapshot.state}");
+        print("Upload state: ${snapshot.state}");
       }).onError((error) {
-        logger.e("Error during upload: $error");
+        print("Error during upload: $error");
       });
 
       TaskSnapshot snapshot = await uploadTask;
-      logger.d("Upload complete: ${snapshot.state}");
+      print("Upload complete: ${snapshot.state}");
 
       String downloadUrl = await firebaseStorage.ref(filePath).getDownloadURL();
-      logger.d("Download URL: $downloadUrl");
+      print("Download URL: $downloadUrl");
 
       await _fireStore
           .collection("users")
@@ -109,11 +108,11 @@ class StorageService with ChangeNotifier {
       notifyListeners();
       showSnackBar(context, "Image uploaded successfully!");
     } catch (e) {
-      logger.e("Upload failed: $e");
+      print("Upload failed: $e");
       showSnackBar(context, "Upload failed");
     } finally {
       _isUploading = false;
-      logger.d("🐛 Image upload process completed");
+      print("🐛 Image upload process completed");
       notifyListeners();
     }
   }

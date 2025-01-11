@@ -1,6 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:chat_app/firebase_options.dart';
-import 'package:chat_app/services/auth/auth_gate.dart';
+import 'package:chat_app/pages/auth/auth.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
 import 'package:cloudinary_flutter/cloudinary_object.dart';
@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const AuthGate(),
+      home: const Auth(),
     );
   }
 }

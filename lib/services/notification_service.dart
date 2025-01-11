@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +11,6 @@ class NotificationService {
 
   static Future<void> initializeNotification() async {
     try {
-      // Initialize local notifications
       await AwesomeNotifications().initialize(
         null,
         [
@@ -31,7 +30,6 @@ class NotificationService {
 
       await AwesomeNotifications().requestPermissionToSendNotifications();
 
-      // Start listening to notifications
       await listenToNotifications();
     } catch (e) {
       print("Error initializing notifications: $e");
@@ -39,12 +37,10 @@ class NotificationService {
   }
 
   static Future<void> listenToNotifications() async {
-    final currentUserId = await AuthMethod().getCurrentUserId();
+    final currentUserId = await AuthService().getCurrentUserId();
 
-    // Cancel existing subscription if any
     await _notificationSubscription?.cancel();
 
-    // Listen to new notifications
     _notificationSubscription = _firestore
         .collection('chat_notifications')
         .where('receiverId', isEqualTo: currentUserId)
@@ -55,7 +51,6 @@ class NotificationService {
         if (change.type == DocumentChangeType.added) {
           final notification = change.doc.data() as Map<String, dynamic>;
 
-          // Show local notification
           await AwesomeNotifications().createNotification(
             content: NotificationContent(
               id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
@@ -70,7 +65,6 @@ class NotificationService {
             ),
           );
 
-          // Mark notification as read
           await change.doc.reference.update({'isRead': true});
         }
       }
@@ -84,8 +78,9 @@ class NotificationService {
     required String roomId,
   }) async {
     try {
-      final currentUserId = await AuthMethod().getCurrentUserId();
-      final senderDoc = await _firestore.collection('users').doc(currentUserId).get();
+      final currentUserId = await AuthService().getCurrentUserId();
+      final senderDoc =
+          await _firestore.collection('users').doc(currentUserId).get();
       final senderName = senderDoc.data()?['name'] ?? 'Unknown';
 
       if (currentUserId != receiverId) {

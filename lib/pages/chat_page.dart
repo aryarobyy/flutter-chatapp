@@ -1,5 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
 import 'package:chat_app/widget/text_field.dart';
@@ -26,7 +26,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final TextEditingController messageController = TextEditingController();
   late final ChatService _chatService;
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
   final FlutterSecureStorage FStorage = FlutterSecureStorage();
   bool isPageVisible = true;
   bool isAppActive = true;
@@ -50,10 +50,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           if (roomId != null) {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ChatPage(
-                    receiverId: widget.receiverId,
-                    roomId: roomId
-                ),
+                builder: (context) =>
+                    ChatPage(receiverId: widget.receiverId, roomId: roomId),
               ),
             );
           }
@@ -82,20 +80,13 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Future<void> _updateUserChatStatus(bool isOnChatPage) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-    await FirebaseFirestore.instance.collection('users').doc(currentUserId).update({
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .update({
       'isOnChatPage': isOnChatPage,
       'currentChatRoom': isOnChatPage ? widget.roomId : null,
     });
-  }
-
-  Future<bool> _isOtherUserOnChatPage(String userId) async {
-    final snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    final data = snapshot.data();
-    if (data == null) return false;
-
-    final isOnChatPage = data['isOnChatPage'] ?? false;
-    final currentChatRoom = data['currentChatRoom'];
-    return isOnChatPage && currentChatRoom == widget.roomId;
   }
 
   Future<void> _initializeNotifications() async {
@@ -114,7 +105,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         );
         print("ReceiverId: ${widget.receiverId}");
 
-        if(widget.receiverId != currentUserId){
+        if (widget.receiverId != currentUserId) {
           await NotificationService.showNotification(
             receiverId: widget.receiverId,
             title: "New Message",
@@ -124,13 +115,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
 
         messageController.clear();
-
       } catch (e) {
         print("Error in handleSendChat: $e");
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +194,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text("Error loading messages: ${snapshot.error}"));
+          return Center(
+              child: Text("Error loading messages: ${snapshot.error}"));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -224,7 +214,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             bool isLatest(List messages, int index) {
               if (index >= messages.length - 1) return true;
               final currentMsg = messages[index].data() as Map<String, dynamic>;
-              final nextMsg = messages[index + 1].data() as Map<String, dynamic>;
+              final nextMsg =
+                  messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
 
@@ -233,7 +224,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
             return BubbleSpecialThree(
               text: message['chat'] ?? "",
-              color: isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
+              color:
+                  isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
               tail: isLatest(messages, index),
               isSender: isSender,
               textStyle: TextStyle(

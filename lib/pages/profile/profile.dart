@@ -1,18 +1,26 @@
-import 'package:chat_app/pages/profile_page.dart';
-import 'package:chat_app/pages/update_profile.dart';
-import 'package:chat_app/services/auth/auth_gate.dart';
+import 'package:chat_app/pages/auth/auth.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/google_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:chat_app/model/user_model.dart';
+import 'package:chat_app/services/images_service.dart';
+import 'package:chat_app/services/storage_service.dart';
+import 'package:chat_app/widget/button2.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/component/snackbar.dart';
+import 'package:chat_app/widget/text_field_2.dart';
 
-class Settings extends StatefulWidget {
-  const Settings({super.key});
+part 'profile_page.dart';
+part 'update_profile.dart';
+
+class Profile extends StatefulWidget {
+  const Profile({super.key});
 
   @override
-  State<Settings> createState() => _SettingsState();
+  State<Profile> createState() => _ProfileState();
 }
 
-class _SettingsState extends State<Settings> {
+class _ProfileState extends State<Profile> {
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +34,7 @@ class _SettingsState extends State<Settings> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AuthGate(),
+                  builder: (context) => Auth(),
                 ),
               );
             }, icon: Icon(Icons.logout)

@@ -1,6 +1,6 @@
-import 'package:chat_app/pages/contact_page.dart';
+import 'package:chat_app/pages/contact/contact.dart';
+import 'package:chat_app/pages/profile/profile.dart';
 import 'package:chat_app/pages/saved_user_contact.dart';
-import 'package:chat_app/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:localstorage/localstorage.dart';
 
@@ -26,7 +26,7 @@ class _HomeState extends State<Home> {
   static const List<Widget> _widgetOptions = <Widget>[
     SavedUserContact(),
     Contact(),
-    Settings()
+    Profile()
   ];
 
 

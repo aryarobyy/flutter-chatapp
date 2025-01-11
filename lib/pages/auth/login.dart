@@ -1,10 +1,4 @@
-import 'package:chat_app/pages/home_page.dart';
-import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/google_auth.dart';
-import 'package:chat_app/widget/button.dart';
-import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/widget/text_field.dart';
-import 'package:flutter/material.dart';
+part of 'auth.dart';
 
 class Login extends StatefulWidget {
   final void Function()? onTap;
@@ -32,7 +26,7 @@ class _LoginState extends State<Login> {
       isLoading = true;
     });
 
-    String res = await AuthMethod().loginUser(
+    String res = await AuthService().loginUser(
       email: emailController.text,
       password: passwordController.text,
     );
@@ -43,10 +37,7 @@ class _LoginState extends State<Login> {
 
     if (res.toLowerCase() == "success") {
       showSnackBar(context, "Login Successful!");
-      MaterialPageRoute(
-          builder: (context) =>
-              Home()
-      );
+      MaterialPageRoute(builder: (context) => Home());
     } else {
       showSnackBar(context, "Wrong password or email");
     }
@@ -71,9 +62,8 @@ class _LoginState extends State<Login> {
                       height: 40,
                     ),
                     SizedBox(
-                      height: 180,
-                      child: Image.asset("assets/images/logo.png")
-                    ),
+                        height: 180,
+                        child: Image.asset("assets/images/logo.png")),
                     const Text(
                       "Selamat datang",
                       style: TextStyle(
@@ -127,27 +117,29 @@ class _LoginState extends State<Login> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text("dont have an account?"),
-                        InkWell(onTap: widget.onTap, child: const Text("Register",
-                            style: TextStyle(color: Colors.blue)
-                        )),
+                        InkWell(
+                            onTap: widget.onTap,
+                            child: const Text("Register",
+                                style: TextStyle(color: Colors.blue))),
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25, vertical: 10),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueGrey),
                         onPressed: () async {
-                          final googleEmail = await GoogleAuth().signInWithGoogle();
+                          final googleEmail =
+                              await GoogleAuth().signInWithGoogle();
                           if (googleEmail != null) {
-                            Navigator.push(context,
+                            Navigator.push(
+                                context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                  Home()
-                              )
-                            );
+                                    builder: (context) => Home()));
                           } else {
-                            showSnackBar(context,"Sign-In failed. Email doesnt exists");
+                            showSnackBar(
+                                context, "Sign-In failed. Email doesnt exists");
                           }
                         },
                         child: Row(

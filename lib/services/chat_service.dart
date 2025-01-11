@@ -1,5 +1,5 @@
 import 'package:chat_app/model/chat_model.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +9,7 @@ class ChatService extends ChangeNotifier {
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final userId = AuthMethod().getCurrentUserId();
+  final userId = AuthService().getCurrentUserId();
   final ROOM_COLLECTION = "rooms";
   final CHAT_COLLECTION = "chats";
 
@@ -114,7 +114,6 @@ class ChatService extends ChangeNotifier {
         .add(newChat.toMap());
   }
 
-
   Stream<QuerySnapshot> getChats(String userId1, String userId2) async* {
     final roomQuery = await _fireStore
         .collection(ROOM_COLLECTION)
@@ -143,18 +142,16 @@ class ChatService extends ChangeNotifier {
         .snapshots();
   }
 
-  Stream<QuerySnapshot> getUserRoom (String userId)  {
+  Stream<QuerySnapshot> getUserRoom(String userId) {
     return _fireStore
         .collection(ROOM_COLLECTION)
         .where('members', arrayContains: userId)
-        .snapshots( );
+        .snapshots();
   }
 
   Future<Map<String, dynamic>> getRoomById(String roomId) async {
-    final docSnapshot = await _fireStore
-        .collection(ROOM_COLLECTION)
-        .doc(roomId)
-        .get();
+    final docSnapshot =
+        await _fireStore.collection(ROOM_COLLECTION).doc(roomId).get();
 
     if (docSnapshot.exists) {
       return docSnapshot.data() as Map<String, dynamic>;
@@ -163,39 +160,6 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  // void listenToChats(String roomId) {
-  //   final currentUserId = _auth.currentUser!.uid;
-  //
-  //   _fireStore
-  //       .collection(ROOM_COLLECTION)
-  //       .doc(roomId)
-  //       .collection(CHAT_COLLECTION)
-  //       .orderBy('time', descending: true)
-  //       .limit(1)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     if (snapshot.docs.isNotEmpty) {
-  //       final latestChat = snapshot.docs.first;
-  //       final chatData = latestChat.data();
-  //
-  //       if (chatData['senderId'] != currentUserId) {
-  //         getRoomById(roomId).then((roomData) {
-  //           final isGroup = roomData['roomType'] == 'group';
-  //           final title = isGroup
-  //               ? roomData['roomName'] ?? "Group Chat"
-  //               : chatData['senderEmail'];
-  //
-  //           NotificationService.showNotification(
-  //             title: title,
-  //             message: chatData['chat'],
-  //             roomId: roomId,
-  //           );
-  //         });
-  //       }
-  //     }
-  //   });
-  // }
-
   Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
     return _fireStore
         .collection(ROOM_COLLECTION)
@@ -203,19 +167,18 @@ class ChatService extends ChangeNotifier {
         .where('members', isEqualTo: [userId1, userId2])
         .snapshots()
         .asyncMap((roomSnapshot) async {
-      if (roomSnapshot.docs.isEmpty) return null;
+          if (roomSnapshot.docs.isEmpty) return null;
 
-      final roomDoc = roomSnapshot.docs.first;
-      final latestChatSnapshot = await roomDoc.reference
-          .collection(CHAT_COLLECTION)
-          .orderBy('time', descending: true)
-          .limit(1)
-          .get();
+          final roomDoc = roomSnapshot.docs.first;
+          final latestChatSnapshot = await roomDoc.reference
+              .collection(CHAT_COLLECTION)
+              .orderBy('time', descending: true)
+              .limit(1)
+              .get();
 
-      return latestChatSnapshot.docs.isNotEmpty
-          ? latestChatSnapshot.docs.first
-          : null;
-    });
+          return latestChatSnapshot.docs.isNotEmpty
+              ? latestChatSnapshot.docs.first
+              : null;
+        });
   }
-
 }

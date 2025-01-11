@@ -1,11 +1,4 @@
-import 'package:chat_app/pages/home_page.dart';
-import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/google_auth.dart';
-import 'package:chat_app/widget/button.dart';
-import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/widget/text_field.dart';
-import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+part of 'auth.dart';
 
 final logger = Logger();
 
@@ -25,7 +18,6 @@ class _RegisterState extends State<Register> {
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
   bool isLoading = false;
-  
 
   @override
   void dispose() {
@@ -54,7 +46,7 @@ class _RegisterState extends State<Register> {
     });
 
     try {
-      String res = await AuthMethod().registerUser(
+      String res = await AuthService().registerUser(
         email: emailController.text.toLowerCase(),
         name: nameController.text,
         password: passwordController.text,
@@ -68,10 +60,7 @@ class _RegisterState extends State<Register> {
 
       if (res == "success") {
         Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Home()
-            )
-        );
+            context, MaterialPageRoute(builder: (context) => Home()));
         showSnackBar(context, "Account created successfully");
         print("Response $res");
       } else {
@@ -108,8 +97,7 @@ class _RegisterState extends State<Register> {
                     ),
                     SizedBox(
                         height: 180,
-                        child: Image.asset("assets/images/logo.png")
-                    ),
+                        child: Image.asset("assets/images/logo.png")),
                     const Text(
                       "Buat Akun",
                       style: TextStyle(
@@ -177,10 +165,9 @@ class _RegisterState extends State<Register> {
                     isLoading
                         ? CircularProgressIndicator()
                         : MyButton(
-                      onPressed: register,
-                      text: "Register",
-                    ),
-
+                            onPressed: register,
+                            text: "Register",
+                          ),
                     SizedBox(
                       height: 20,
                     ),
@@ -189,30 +176,31 @@ class _RegisterState extends State<Register> {
                       children: [
                         const Text("Already have an account? "),
                         InkWell(
-                          onTap: widget.onTap,
-                          child: const Text("Login",
-                              style: TextStyle(color: Colors.blue)
-                          )
-                        )
+                            onTap: widget.onTap,
+                            child: const Text("Login",
+                                style: TextStyle(color: Colors.blue)))
                       ],
                     ),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25, vertical: 10),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueGrey),
                         onPressed: () async {
-                          final googleEmail = await GoogleAuth().signUpWithGoogle();
+                          final googleEmail =
+                              await GoogleAuth().signUpWithGoogle();
                           if (googleEmail != null) {
-                            Navigator.push(context,
+                            Navigator.push(
+                                context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        Home()
-                                )
-                            );
+                                    builder: (context) => Home()));
                           } else {
-                            showSnackBar(context,"Sign-In failed. Navigation to home page aborted.");
+                            showSnackBar(context,
+                                "Sign-In failed. Navigation to home page aborted.");
                           }
                         },
                         child: Row(

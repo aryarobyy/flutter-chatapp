@@ -1,30 +1,21 @@
-import 'package:chat_app/component/search_bar.dart';
-import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/pages/chat_page.dart';
-import 'package:chat_app/services/auth/authentication.dart';
-import 'package:chat_app/services/chat_service.dart';
-import 'package:chat_app/widget/user_tile.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:localstorage/localstorage.dart';
-import 'dart:convert';
+part of 'contact.dart';
 
-class Contact extends StatefulWidget {
-  const Contact({super.key});
+class SearchContact extends StatefulWidget {
+  const SearchContact({super.key});
 
   @override
-  State<Contact> createState() => _ContactState();
+  State<SearchContact> createState() => _SearchContactState();
 }
 
-class _ContactState extends State<Contact> {
+class _SearchContactState extends State<SearchContact> {
   final TextEditingController _searchController = TextEditingController();
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
   String _searchQuery = '';
   bool isSearching = false;
   String? _currentUserId;
 
   final FStorage = FlutterSecureStorage();
-  LocalStorage? localStorage;
+  LocalStorage? historyStorage;
   bool isStorageInitialized = false;
 
   @override
@@ -47,21 +38,24 @@ class _ContactState extends State<Contact> {
 
   Future<void> _initializeStorage() async {
     try {
-      final storage = LocalStorage('chat_app');
-      final isReady = await storage.ready;
-      if (isReady) {
+      final historyData = LocalStorage('history_data');
+      final groupData = LocalStorage('grooup_data');
+
+      final isUserStorageReady = await historyData.ready;
+      final isChatStorageReady = await groupData.ready;
+
+      if (isUserStorageReady && isChatStorageReady) {
         setState(() {
-          localStorage = storage;
+          historyStorage = historyData;
           isStorageInitialized = true;
         });
       } else {
-        print("Failed to initialize LocalStorage");
+        print("Failed to initialize one or both LocalStorage instances");
       }
     } catch (e) {
       print("Error initializing storage: $e");
     }
   }
-
 
   void _onPressed() async {
     try {
@@ -69,7 +63,7 @@ class _ContactState extends State<Contact> {
       final userData = await userStream.first;
       final _currentEmail = userData.email;
 
-      if (_searchController.text.toLowerCase() == _currentEmail){
+      if (_searchController.text.toLowerCase() == _currentEmail) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('You cannot chat with yourself')),
         );
@@ -83,7 +77,6 @@ class _ContactState extends State<Contact> {
       print("Error fetching user data: $e");
     }
   }
-
 
   Future<void> handleCreateRoom(Map<String, dynamic> userMap) async {
     if (_currentUserId == null) {
@@ -108,21 +101,22 @@ class _ContactState extends State<Contact> {
         return;
       }
 
-      final List<dynamic> existingRooms = jsonDecode(localStorage!.getItem(_currentUserId as String) ?? '[]');
+      final List<dynamic> existingRooms =
+          jsonDecode(historyStorage!.getItem(_currentUserId as String) ?? '[]');
       if (!existingRooms.contains(roomId)) {
         existingRooms.add(roomId);
-        localStorage!.setItem(_currentUserId as String, jsonEncode(existingRooms));
+        historyStorage!
+            .setItem(_currentUserId as String, jsonEncode(existingRooms));
       }
       print("Stored rooms: $existingRooms");
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ChatPage(
-                receiverId: userMap['uid'],
-                roomId: roomId,
-              ),
+          builder: (context) => ChatPage(
+            receiverId: userMap['uid'],
+            roomId: roomId,
+          ),
         ),
       );
     } catch (e) {
@@ -139,10 +133,11 @@ class _ContactState extends State<Contact> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ChatApp"),
+        title: Text("Add Contacts"),
       ),
       body: Column(
         children: [
+          // Search Bar
           Container(
             margin: const EdgeInsets.all(8.0),
             padding: const EdgeInsets.all(2.0),
@@ -157,69 +152,131 @@ class _ContactState extends State<Contact> {
             ),
           ),
           Expanded(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          localStorage!.deleteItem(_currentUserId as String);
-                          setState(() {});
-                        },
-                        child: Row(
-                          children: [
-                            Icon(Icons.clear, color: Colors.redAccent),
-                            SizedBox(width: 8),
-                            Text(
-                              "Clear history",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.all(16.0),
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: _buildTile(context),
-                  ),
-                ),
-              ],
-            ),
+            child: _buildContactList(context),
           ),
-
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => AddGroup()));
+        },
+        child: Icon(Icons.add),
+        tooltip: "Create a Group",
       ),
     );
   }
 
-  Widget _builHistory() {
-    if (!isStorageInitialized || localStorage == null) {
+  Widget _buildContactList(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        historyStorage!.deleteItem(_currentUserId as String);
+                        setState(() {});
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.clear, color: Colors.redAccent),
+                          SizedBox(width: 8),
+                          Text(
+                            "Clear history",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 6,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Stack(children: [
+                    _buildSearchTile(context),
+                    // Positioned(
+                    //   bottom: 16,
+                    //   right: 16,
+                    //   child: IconButton(
+                    //     onPressed: () {
+                    //       _toggleAddGroup();
+                    //     },
+                    //     icon: Icon(Icons.add),
+                    //     color:Colors.lightBlue,
+                    //     iconSize: 30,
+                    //     tooltip: "Make a group chat",
+                    //   ),
+                    // )
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchTile(BuildContext context) {
+    if (_searchQuery.isEmpty) {
+      return _buildHistory();
+    }
+
+    return StreamBuilder<UserModel?>(
+      stream: _auth.getUserByEmail(_searchQuery.toLowerCase()),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text("Error loading user profile."));
+        }
+        final user = snapshot.data;
+        if (user == null) {
+          return const Center(child: Text("No user found."));
+        }
+
+        return UserTile(
+          user: user,
+          onTap: () => handleCreateRoom({'uid': user.uid}),
+        );
+      },
+    );
+  }
+
+  Widget _buildHistory() {
+    if (!isStorageInitialized || historyStorage == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final storedRooms = jsonDecode(localStorage!.getItem(_currentUserId as String) ?? '[]') as List<dynamic>;
+    final storedRooms =
+        jsonDecode(historyStorage!.getItem(_currentUserId as String) ?? '[]')
+            as List<dynamic>;
     print("Stored rooms: $storedRooms");
 
     if (storedRooms.isEmpty) {
@@ -241,7 +298,7 @@ class _ContactState extends State<Contact> {
             final room = roomSnapshot.data!;
             final members = room['members'] ?? [];
             final receiverId = members.firstWhere(
-                  (id) => id != _currentUserId,
+              (id) => id != _currentUserId,
               orElse: () => null,
             );
 
@@ -276,33 +333,6 @@ class _ContactState extends State<Contact> {
               },
             );
           },
-        );
-      },
-    );
-  }
-
-  Widget _buildTile(BuildContext context) {
-    if (_searchQuery.isEmpty) {
-      return _builHistory();
-    }
-
-    return StreamBuilder<UserModel?>(
-      stream: _auth.getUserByEmail(_searchQuery.toLowerCase()),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return const Center(child: Text("Error loading user profile."));
-        }
-        final user = snapshot.data;
-        if (user == null) {
-          return const Center(child: Text("No user found."));
-        }
-
-        return UserTile(
-          user: user,
-          onTap: () => handleCreateRoom({'uid': user.uid}),
         );
       },
     );

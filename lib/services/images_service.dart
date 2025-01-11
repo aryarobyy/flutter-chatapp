@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:chat_app/component/snackbar.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,13 +10,12 @@ import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 
-
 const String IMAGE_COLLECTION = "images";
 
 class ImagesService {
   final ImagePicker _picker = ImagePicker();
   late final Cloudinary cloudinary;
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
 
   ImagesService() {
     if (dotenv.env['CLOUDINARY_CLOUD_NAME'] == null ||
@@ -28,9 +27,7 @@ class ImagesService {
   Future uploadImage(BuildContext context) async {
     try {
       XFile? pickedImage = await _picker.pickImage(
-          source: ImageSource.gallery,
-        imageQuality: 70
-      );
+          source: ImageSource.gallery, imageQuality: 70);
 
       if (pickedImage == null) {
         showSnackBar(context, "No image selected.");
@@ -47,9 +44,8 @@ class ImagesService {
       late final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
       late final uploadPreset = dotenv.env['CLOUDINARY_UPLOAD_PRESET']!;
 
-      final uri = Uri.parse(
-          'https://api.cloudinary.com/v1_1/$cloudName/auto/upload'
-      );
+      final uri =
+          Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/auto/upload');
 
       var request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = uploadPreset
@@ -95,8 +91,8 @@ class ImagesService {
       final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final signature = generateSignature(publicId, timestamp, apiSecret);
 
-      final deleteUri = Uri.parse(
-          'https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
+      final deleteUri =
+          Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/destroy');
 
       final response = await http.post(
         deleteUri,
@@ -129,5 +125,4 @@ class ImagesService {
     final digest = sha1.convert(bytes);
     return digest.toString();
   }
-
 }

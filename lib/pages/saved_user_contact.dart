@@ -1,7 +1,7 @@
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/pages/home_page.dart';
-import 'package:chat_app/services/auth/authentication.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widget/button2.dart';
 import 'package:chat_app/widget/chat_tile.dart';
@@ -18,7 +18,7 @@ class SavedUserContact extends StatefulWidget {
 class _SavedUserContactState extends State<SavedUserContact> {
   static const String _tag = "SAVED_CONTACTS";
   String? currentUserId;
-  final AuthMethod _auth = AuthMethod();
+  final AuthService _auth = AuthService();
   final ChatService _chat = ChatService();
   String? selectedUserId;
 
@@ -37,7 +37,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
 
   Future<void> handleCreateRoom(Map<String, dynamic> userMap) async {
     try {
-      final currentUserId = await AuthMethod().getCurrentUserId();
+      final currentUserId = await AuthService().getCurrentUserId();
 
       List<String> member = [currentUserId, userMap['uid']];
 
@@ -80,7 +80,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,13 +89,12 @@ class _SavedUserContactState extends State<SavedUserContact> {
       body: currentUserId == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
-        children: [
-          Expanded(child: _contactUi(context)),
-        ],
-      ),
+              children: [
+                Expanded(child: _contactUi(context)),
+              ],
+            ),
     );
   }
-
 
   @override
   Widget _contactUi(BuildContext context) {
@@ -136,7 +134,8 @@ class _SavedUserContactState extends State<SavedUserContact> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Home(initialTab: 1)),
+                        MaterialPageRoute(
+                            builder: (context) => Home(initialTab: 1)),
                       );
                     },
                   ),
@@ -146,7 +145,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
           );
         }
 
-
         final rooms = snapshot.data!.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .toList();
@@ -155,7 +153,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
         final List<Map<String, dynamic>> roomLists = rooms.map((room) {
           final members = room["members"] as List<dynamic>;
           final receiverId = members.firstWhere(
-                (id) => id != currentUserId,
+            (id) => id != currentUserId,
             orElse: () => null,
           );
 
@@ -208,7 +206,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
     );
   }
 
-
   //Sementara
   void _showUserProfile(BuildContext context, UserModel user) {
     showDialog(
@@ -223,8 +220,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
             Text('Last active: ${user.lastDayActive()}'),
             if (user.wasRecentlyActive())
               const Text('Status: Recently active',
-                  style: TextStyle(color: Colors.green)
-              ),
+                  style: TextStyle(color: Colors.green)),
           ],
         ),
         actions: [
