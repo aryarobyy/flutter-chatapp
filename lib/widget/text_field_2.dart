@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MyTextField2 extends StatelessWidget {
   final TextEditingController controller;
   final String name;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final bool obscureText;
   final TextCapitalization textCapitalization;
   final TextInputType inputType;
@@ -14,7 +14,7 @@ class MyTextField2 extends StatelessWidget {
     Key? key,
     required this.controller,
     required this.name,
-    required this.prefixIcon,
+    this.prefixIcon,
     this.obscureText = false,
     this.textCapitalization = TextCapitalization.none,
     required this.inputType,

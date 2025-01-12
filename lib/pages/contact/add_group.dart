@@ -9,12 +9,13 @@ class AddGroup extends StatefulWidget {
 
 class _AddGroupState extends State<AddGroup> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
   String? _currentUserId;
-  String? _selectedUserId;
   final AuthService _auth = AuthService();
   final ChatService _chat = ChatService();
   String _searchQuery = '';
   bool _isSearching = false;
+  String _groupName = '';
 
   final List<String> _addedUsers = [];
   LocalStorage? localStorage;
@@ -79,21 +80,26 @@ class _AddGroupState extends State<AddGroup> {
       );
       return;
     }
+
     try {
       final currentUserId = await _auth.getCurrentUserId();
-      print("currentUserId: $currentUserId");
 
       List<String> members = [currentUserId, ...userIds];
-      print("Members: $members");
+
+      if (members.length <= 2) {
+        showSnackBar(context, "Minimal 2 user");
+        return;
+      }
+
+      final groupName = await _buildGroupName(context);
 
       await _chat.createRoom(
+        roomName: groupName,
         member: members,
         isGroup: isGroup,
       );
       if (!mounted) return;
-
     } catch (e) {
-      print('Error creating room: $e');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +107,6 @@ class _AddGroupState extends State<AddGroup> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +137,6 @@ class _AddGroupState extends State<AddGroup> {
                         context,
                         MaterialPageRoute(builder: (context) => SearchContact()),
                       );
-                      // localStorage!.deleteItem(_addedUsers as String);
-                      // setState(() {});
                     },
                     icon: Icon(Icons.cancel_outlined),
                   ),
@@ -323,6 +326,36 @@ class _AddGroupState extends State<AddGroup> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<String?> _buildGroupName(BuildContext context) {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+
+        return MyAlert(
+          controller: _textController,
+          onCancel: () {
+            Navigator.of(context).pop(null);
+          },
+          onSave: () {
+            final groupName = _textController.text.trim();
+            if (groupName.isNotEmpty) {
+              setState(() {
+                _groupName = groupName;
+              });
+              Navigator.of(context).pop(groupName);
+              _textController.clear();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Group name cannot be empty")),
+              );
+            }
+          },
+        );
+      },
     );
   }
 

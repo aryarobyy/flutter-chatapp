@@ -26,6 +26,7 @@ class ChatService extends ChangeNotifier {
     required List<String> member,
     String? roomName,
     bool isGroup = false,
+    String? imageUrl
   }) async {
     final currentUserId = _auth.currentUser!.uid;
 
@@ -40,6 +41,7 @@ class ChatService extends ChangeNotifier {
         .collection(ROOM_COLLECTION)
         .where('members', arrayContains: currentUserId)
         .where('roomType', isEqualTo: isGroup ? 'group' : 'private')
+        .where('image', isEqualTo: imageUrl)
         .get();
 
     for (var doc in roomQuery.docs) {
@@ -180,5 +182,25 @@ class ChatService extends ChangeNotifier {
               ? latestChatSnapshot.docs.first
               : null;
         });
+  }
+
+  Stream<DocumentSnapshot?> streamLatestChatById(String roomId) {
+    return _fireStore
+        .collection(ROOM_COLLECTION)
+        .doc(roomId)
+        .snapshots()
+        .asyncMap((roomSnapshot) async {
+      if (!roomSnapshot.exists) return null;
+
+      final latestChatSnapshot = await roomSnapshot.reference
+          .collection(CHAT_COLLECTION)
+          .orderBy('time', descending: true)
+          .limit(1)
+          .get();
+
+      return latestChatSnapshot.docs.isNotEmpty
+          ? latestChatSnapshot.docs.first
+          : null;
+    });
   }
 }
