@@ -91,14 +91,16 @@ class _AddGroupState extends State<AddGroup> {
         return;
       }
 
+      final isGroup = members.length > 2;
       final groupName = await _buildGroupName(context);
 
       await _chat.createRoom(
         roomName: groupName,
         member: members,
-        isGroup: isGroup,
+        isGroup: isGroup ?? false,
       );
       if (!mounted) return;
+
     } catch (e) {
       if (!mounted) return;
 

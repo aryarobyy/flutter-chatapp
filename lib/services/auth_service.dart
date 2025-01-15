@@ -211,7 +211,6 @@ class AuthService {
 
 
   Stream<UserModel> getUserById(String uid) {
-    print("Fetching user with UID: $uid");
     return _fireStore
         .collection(USER_COLLECTION)
         .where('uid', isEqualTo: uid)

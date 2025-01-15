@@ -36,8 +36,7 @@ class ChatTile extends StatelessWidget {
                 : AssetImage("assets/images/profile.png") as ImageProvider,
           ),
         ),
-        title: Text(
-          user.name,
+        title: Text(user.name ,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,

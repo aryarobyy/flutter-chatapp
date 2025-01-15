@@ -24,7 +24,7 @@ class RoomModel {
       roomType: map['roomType'] ?? '',
       roomName: map['roomName'] ?? '',
       members: List<String>.from(map['members'] ?? []),
-      imageUrl: map['imaage']
+      imageUrl: map['image'] ?? '',
     );
   }
 }
