@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverId;
-  final String? roomId;
+  final String roomId;
   const ChatPage({
     super.key,
     required this.receiverId,
@@ -37,12 +37,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _chat = Provider.of<ChatService>(context, listen: false);
     _initializeNotifications();
-    print("RoomId: ${widget.roomId}");
 
     if (widget.roomId != null) {
       _updateUserChatStatus(true);
       ChatService.enterChatPage(widget.roomId!);
-      print("Entered chat page: ${widget.roomId}");
     }
     AwesomeNotifications().setListeners(
       onActionReceivedMethod: (ReceivedAction receivedAction) async {
@@ -104,11 +102,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           message: messageController.text,
           member: members,
         );
-        print("ReceiverId: ${widget.receiverId}");
 
         if (widget.receiverId != currentUserId) {
           await NotificationService.showNotification(
-            receiverId: widget.receiverId,
+            receiverIds: members,
             title: "New Message",
             message: messageController.text,
             roomId: widget.roomId ?? '',
@@ -124,7 +121,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print("TESTTTT");
     return FutureBuilder<String>(
       future: _auth.getCurrentUserId(),
       builder: (context, snapshot) {
@@ -187,8 +183,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   }
 
   Widget _bubbleChat(BuildContext context, String currentUserId) {
+    print("RoomId ${widget.roomId}");
     return StreamBuilder<QuerySnapshot>(
-      stream: _chat.getChats(currentUserId,[widget.receiverId]),
+      stream: _chat.getChatsByRoomId(widget.roomId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -200,10 +197,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           );
         }
 
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text("No messages yet"));
         }
-
         final messages = snapshot.data!.docs.reversed.toList();
 
         return ListView.builder(

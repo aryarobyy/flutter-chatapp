@@ -44,7 +44,6 @@ class ChatService extends ChangeNotifier {
         .where('roomType', isEqualTo: isGroup ? 'group' : 'private')
         .where('image', isEqualTo: imageUrl)
         .get();
-    // print("Room Query: $roomQuery");
 
     for (var doc in roomQuery.docs) {
       final existingMembers = List<String>.from(doc.data()['members']);
@@ -86,7 +85,7 @@ class ChatService extends ChangeNotifier {
     required String message,
     required List<String> member,
     String? roomName,
-    bool isGroup = false,
+    bool? isGroup,
   }) async {
     final currentUserId = _auth.currentUser!.uid;
     final currentEmail = _auth.currentUser!.email!;
@@ -95,7 +94,7 @@ class ChatService extends ChangeNotifier {
     final roomId = await createRoom(
       member: member,
       roomName: roomName,
-      isGroup: isGroup,
+      isGroup: member.length > 2 == true,
     );
 
     final String chatId = Uuid().v4();
@@ -147,13 +146,13 @@ class ChatService extends ChangeNotifier {
         .snapshots();
   }
 
-  Stream<QuerySnapshot> getChatsByRoomId(String roomId) async*{
-    await _fireStore
+  Stream<QuerySnapshot> getChatsByRoomId(String roomId) {
+    return  _fireStore
         .collection(ROOM_COLLECTION)
         .doc(roomId)
         .collection(CHAT_COLLECTION)
-        .get();
-
+        .orderBy('time', descending: false)
+        .snapshots();
   }
 
   Stream<QuerySnapshot> getUserRooms(String userId){

@@ -72,7 +72,7 @@ class NotificationService {
   }
 
   static Future<void> showNotification({
-    required String receiverId,
+    required List<String> receiverIds,
     required String title,
     required String message,
     required String roomId,
@@ -83,12 +83,12 @@ class NotificationService {
           await _firestore.collection('users').doc(currentUserId).get();
       final senderName = senderDoc.data()?['name'] ?? 'Unknown';
 
-      if (currentUserId != receiverId) {
+      if (currentUserId != receiverIds) {
         await _firestore.collection('chat_notifications').add({
           'title': "Message from $senderName",
           'body': message,
           'senderId': currentUserId,
-          'receiverId': receiverId,
+          'receiverId': receiverIds,
           'roomId': roomId,
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,
