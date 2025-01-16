@@ -288,7 +288,7 @@ class _SearchContactState extends State<SearchContact> {
       itemBuilder: (context, index) {
         final roomId = storedRooms[index];
 
-        return FutureBuilder<Map<String, dynamic>>(
+        return FutureBuilder<RoomModel?>(
           future: ChatService().getRoomById(roomId),
           builder: (context, roomSnapshot) {
             if (!roomSnapshot.hasData) {
@@ -296,10 +296,10 @@ class _SearchContactState extends State<SearchContact> {
             }
 
             final room = roomSnapshot.data!;
-            final members = room['members'] ?? [];
+            final members = room.members ?? [];
             final receiverId = members.firstWhere(
               (id) => id != _currentUserId,
-              orElse: () => null,
+              orElse: () => '',
             );
 
             if (receiverId == null) return const SizedBox.shrink();

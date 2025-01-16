@@ -1,5 +1,4 @@
 import 'package:chat_app/model/room_model.dart';
-import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:flutter/material.dart';
 

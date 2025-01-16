@@ -25,7 +25,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   final TextEditingController messageController = TextEditingController();
-  late final ChatService _chatService;
+  late final ChatService _chat;
   final AuthService _auth = AuthService();
   final FlutterSecureStorage FStorage = FlutterSecureStorage();
   bool isPageVisible = true;
@@ -35,8 +35,9 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _chatService = Provider.of<ChatService>(context, listen: false);
+    _chat = Provider.of<ChatService>(context, listen: false);
     _initializeNotifications();
+    print("RoomId: ${widget.roomId}");
 
     if (widget.roomId != null) {
       _updateUserChatStatus(true);
@@ -99,7 +100,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         final currentUserId = await _auth.getCurrentUserId();
         final List<String> members = [currentUserId, widget.receiverId];
 
-        await _chatService.sendChat(
+        await _chat.sendChat(
           message: messageController.text,
           member: members,
         );
@@ -187,7 +188,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Widget _bubbleChat(BuildContext context, String currentUserId) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _chatService.getChats(currentUserId, widget.receiverId),
+      stream: _chat.getChats(currentUserId,[widget.receiverId]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -195,7 +196,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
         if (snapshot.hasError) {
           return Center(
-              child: Text("Error loading messages: ${snapshot.error}"));
+              child: Text("Error loading messages: ${snapshot.error}")
+          );
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

@@ -104,7 +104,6 @@ class ChatService extends ChangeNotifier {
       roomId: roomId,
       chatId: chatId,
       senderId: currentUserId,
-      receiverId: "",
       senderEmail: currentEmail,
       chat: message,
       activity: true,
@@ -118,7 +117,7 @@ class ChatService extends ChangeNotifier {
         .add(newChat.toMap());
   }
 
-  Stream<QuerySnapshot> getChats(String userId1, String userId2) async* {
+  Stream<QuerySnapshot> getChats(String userId1, List<String> members) async* {
     final roomQuery = await _fireStore
         .collection(ROOM_COLLECTION)
         .where('members', arrayContains: userId1)
@@ -128,7 +127,9 @@ class ChatService extends ChangeNotifier {
 
     for (var doc in roomQuery.docs) {
       final members = List<String>.from(doc.data()['members']);
-      if (members.contains(userId2)) {
+      bool containsAllMembers = members.every((userId) => members.contains(userId));
+
+      if (containsAllMembers) {
         roomId = doc.id;
         break;
       }
@@ -146,6 +147,15 @@ class ChatService extends ChangeNotifier {
         .snapshots();
   }
 
+  Stream<QuerySnapshot> getChatsByRoomId(String roomId) async*{
+    await _fireStore
+        .collection(ROOM_COLLECTION)
+        .doc(roomId)
+        .collection(CHAT_COLLECTION)
+        .get();
+
+  }
+
   Stream<QuerySnapshot> getUserRooms(String userId){
     return _fireStore
         .collection(ROOM_COLLECTION)
@@ -153,16 +163,17 @@ class ChatService extends ChangeNotifier {
         .snapshots();
   }
 
-  Future<Map<String, dynamic>> getRoomById(String roomId) async {
+  Future<RoomModel?> getRoomById(String roomId) async {
     final docSnapshot =
-        await _fireStore.collection(ROOM_COLLECTION).doc(roomId).get();
+    await _fireStore.collection(ROOM_COLLECTION).doc(roomId).get();
 
-    if (docSnapshot.exists) {
-      return docSnapshot.data() as Map<String, dynamic>;
+    if (docSnapshot.exists && docSnapshot.data() != null) {
+      return RoomModel.fromMap(docSnapshot.data() as Map<String, dynamic>);
     } else {
-      return {};
+      return null;
     }
   }
+
 
   Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
     return _fireStore
