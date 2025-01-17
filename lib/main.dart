@@ -1,6 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:chat_app/firebase_options.dart';
 import 'package:chat_app/pages/auth/auth.dart';
+import 'package:chat_app/pages/loading_page.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
 import 'package:cloudinary_flutter/cloudinary_object.dart';
@@ -34,40 +35,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: ".env");
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
-  CloudinaryObject.fromCloudName(cloudName: cloudName);
-
-  await FirebaseAuth.instance.setSettings(
-    appVerificationDisabledForTesting: true,
-  );
-
-  await NotificationService.initializeNotification();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  Provider.debugCheckInvalidValueType = null;
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider<ChatService>(
-          create: (_) => ChatService(),
-        ),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -75,16 +43,85 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Chat App',
-      theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
-        textTheme: GoogleFonts.robotoTextTheme(
-          Theme.of(context).textTheme,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ChatService>(
+          create: (_) => ChatService(),
         ),
+      ],
+      child: MaterialApp(
+        title: 'Chat App',
+        theme: ThemeData(
+          primarySwatch: Colors.lightBlue,
+          textTheme: GoogleFonts.robotoTextTheme(
+            Theme.of(context).textTheme,
+          ),
+        ),
+        debugShowCheckedModeBanner: false,
+        home: const InitializationScreen(),
       ),
-      debugShowCheckedModeBanner: false,
-      home: const Auth(),
+    );
+  }
+}
+
+class InitializationScreen extends StatefulWidget {
+  const InitializationScreen({super.key});
+
+  @override
+  State<InitializationScreen> createState() => _InitializationScreenState();
+}
+
+class _InitializationScreenState extends State<InitializationScreen> {
+  late Future<void> _initializationFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializationFuture = _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await dotenv.load(fileName: ".env");
+
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    final cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME']!;
+    CloudinaryObject.fromCloudName(cloudName: cloudName);
+
+    await FirebaseAuth.instance.setSettings(
+      appVerificationDisabledForTesting: true,
+    );
+
+    await NotificationService.initializeNotification();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    Provider.debugCheckInvalidValueType = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _initializationFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingPage();
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        }
+        return const Auth();
+      },
     );
   }
 }
