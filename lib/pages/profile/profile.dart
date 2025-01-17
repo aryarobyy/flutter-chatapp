@@ -21,42 +21,37 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("Profile"),
-            IconButton(onPressed: () async {
-              await GoogleAuth().googleSignOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Auth(),
-                ),
-              );
-            }, icon: Icon(Icons.logout)
-            )
-          ],
-        ),
-      ),
       body: SafeArea(
-        child: Navigator(
-          onGenerateRoute: (RouteSettings settings) {
-            Widget page;
-            switch (settings.name) {
-              case '/update-profile':
-                page = const UpdateProfile();
-                break;
-              case '/':
-              default:
-                page = const ProfilePage();
+        child: FutureBuilder <String>(
+          future: AuthService().getCurrentUserId(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            } else if (snapshot.hasData) {
+              final userId = snapshot.data!;
+              return Navigator(
+                onGenerateRoute: (RouteSettings settings) {
+                  Widget page;
+                  switch (settings.name) {
+                    case '/update-profile':
+                      page = const UpdateProfile();
+                      break;
+                    case '/':
+                    default:
+                      page = ProfilePage(userId: userId);
+                  }
+                  return MaterialPageRoute(builder: (context) => page);
+                },
+              );
+            } else {
+              return const Center(child: Text("User not found"));
             }
-            return MaterialPageRoute(builder: (context) => page);
-          },
-        ),
+          }
+        )
       ),
     );
   }

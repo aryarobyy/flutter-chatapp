@@ -1,7 +1,12 @@
 part of 'profile.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final String userId;
+
+  const ProfilePage({
+    super.key,
+    required this.userId
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -11,6 +16,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late double _deviceHeight;
   late double _deviceWidth;
   final AuthService _auth = AuthService();
+  String? _currUser;
 
   @override
   void initState() {
@@ -49,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
         }
         final currUser = snapshots.data;
         return StreamBuilder<UserModel>(
-          stream: _auth.getUserById(currUser!),
+          stream: _auth.getUserById(widget.userId!),
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -68,6 +74,25 @@ class _ProfilePageState extends State<ProfilePage> {
             final imgUrl = user.imageUrl;
 
             return Scaffold(
+              appBar: AppBar(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Profile"),
+                    currUser == user.uid ?
+                    IconButton(onPressed: () async {
+                      await GoogleAuth().googleSignOut();
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => Auth(),
+                          ),
+                        );
+                      }, icon: Icon(Icons.logout)
+                    ) : SizedBox()
+                  ],
+                )
+              ),
               body: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -157,6 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       SizedBox(
                         height: 30,
                       ),
+                      currUser == widget.userId ?
                       SizedBox(
                         width: 150,
                         child: MyButton2(
@@ -167,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   MaterialPageRoute(
                                       builder: (context) => UpdateProfile()));
                             }),
-                      )
+                      ) : SizedBox(height: 10,)
                     ],
                   ),
                 ),

@@ -15,6 +15,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  String? _currUserId;
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfilePage(),
+          builder: (context) => ProfilePage(userId: _currUserId as String),
         ),
       );
     }
@@ -72,6 +73,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
       final currentName = currentUser.name ?? '';
       final currentEmail = currentUser.email ?? '';
       final currentBio = currentUser.bio ?? '';
+
+      setState(() {
+        _currUserId = currentUserId;
+      });
 
       final uploadData = {
         'name': _nameController.text.trim().isEmpty
@@ -90,7 +95,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfilePage(),
+          builder: (context) => ProfilePage(userId: _currUserId as String),
         ),
       );
     } catch (e) {
@@ -110,6 +115,9 @@ class _UpdateProfileState extends State<UpdateProfile> {
     _deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Update Your profile"),
+      ),
       body: _buildProfileUi(),
     );
   }
