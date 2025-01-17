@@ -60,6 +60,7 @@ class ChatService extends ChangeNotifier {
         'members': member,
         'roomType': isGroup ? 'group' : 'private',
         'roomName': isGroup ? roomName : null,
+        'roomId': roomId,
       }, SetOptions(merge: true));
     }
 

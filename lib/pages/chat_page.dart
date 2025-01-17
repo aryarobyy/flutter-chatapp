@@ -217,6 +217,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
+            bool isNewest(int index) => index == 0;
 
             String fullText = message['chat'] ?? "";
             bool isLongText = fullText.length > 255;
@@ -225,7 +226,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               text: message['chat'] ?? "",
               color:
                   isSender ? const Color(0xFF1B97F3) : const Color(0xFFE8E8EE),
-              tail: isLatest(messages, index),
+              tail: isNewest(index),
               isSender: isSender,
               textStyle: TextStyle(
                 color: isSender ? Colors.white : Colors.black,
@@ -240,6 +241,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Widget _profileUser(BuildContext context, String receiverId) {
     final receiverId = widget.receiverId;
+    print("ReceiverId $receiverId");
 
     return StreamBuilder(
       stream: _auth.getUserById(receiverId),
@@ -255,6 +257,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
 
         final user = snapshot.data!;
+        print("User image: ${user}");
         return Row(
           children: [
             CircleAvatar(

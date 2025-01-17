@@ -1,15 +1,16 @@
 import 'package:chat_app/model/user_model.dart';
-import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:flutter/material.dart';
 
 class ChatTile extends StatelessWidget {
+  final String roomId;
   final UserModel user;
   final Function onChatTap;
   final Function onProfileTap;
 
   const ChatTile({
     super.key,
+    required this.roomId,
     required this.user,
     required this.onChatTap,
     required this.onProfileTap,
@@ -18,7 +19,6 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ChatService _chatService = ChatService();
-
     return GestureDetector(
       onTap: () {
         onChatTap();
@@ -42,31 +42,12 @@ class ChatTile extends StatelessWidget {
             fontSize: 18,
           ),
         ),
-        subtitle: FutureBuilder<String>(
-          future: AuthService().getCurrentUserId(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Text(
-                "Loading...",
-                style: TextStyle(color: Colors.grey, fontSize: 16),
-              );
-            }
-            if (snapshot.hasError) {
-              return const Text(
-                "Error loading user ID",
-                style: TextStyle(color: Colors.red, fontSize: 16),
-              );
-            }
-            if (!snapshot.hasData) {
-              return const Text(
-                "User ID not available",
-                style: TextStyle(color: Colors.grey, fontSize: 16),
-              );
-            }
-
-            final currentUserId = snapshot.data!;
-            return StreamBuilder(
-              stream: _chatService.streamLatestChat(currentUserId, user.uid),
+        subtitle: roomId == null
+                ? const Text(
+              "No chat yet",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ) : StreamBuilder(
+              stream: _chatService.streamLatestChatById(roomId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Text(
@@ -86,8 +67,6 @@ class ChatTile extends StatelessWidget {
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   );
                 }
-                print("Latest chat : ${snapshot.data!}");
-
 
                 final latestChat = snapshot.data!.data() as Map<String, dynamic>;
                 return Text(
@@ -100,18 +79,8 @@ class ChatTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 );
               },
-            );
-          },
+            )
         ),
-
-        trailing: Text(
-          user.lastDayActive(),
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
-          ),
-        ),
-      ),
     );
   }
 }

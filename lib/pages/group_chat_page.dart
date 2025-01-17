@@ -1,6 +1,9 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/model/room_model.dart';
+import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
+import 'package:chat_app/pages/profile/profile.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
@@ -246,20 +249,14 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
           itemBuilder: (context, index) {
             final message = messages[index].data() as Map<String, dynamic>;
             final isSender = message['senderId'] == currentUserId;
-
+            
             bool isLatest(List messages, int index) {
               if (index >= messages.length - 1) return true;
               final currentMsg = messages[index].data() as Map<String, dynamic>;
               final nextMsg = messages[index + 1].data() as Map<String, dynamic>;
               return currentMsg['senderId'] != nextMsg['senderId'];
             }
-
-            bool isFirst(List messages, int index) {
-              if (index == 0) return true;
-              final currentMsg = messages[index].data() as Map<String, dynamic>;
-              final previousMsg = messages[index - 1].data() as Map<String, dynamic>;
-              return currentMsg['senderId'] != previousMsg['senderId'];
-            }
+            bool isNewest(int index) => index == 0;
 
             return Column(
               crossAxisAlignment:
@@ -267,13 +264,17 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
               children: [
                 if (isLatest(messages, index))
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      isSender ? "You" : message['senderEmail'] ?? "Unknown User",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
+                    padding: const EdgeInsets.only(right: 20),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(userId: message['senderId']),
+                          ),
+                        );
+                      },
+                      child: _buildChatHeader(context, message['senderId'], isSender),
                     ),
                   ),
                 BubbleSpecialThree(
@@ -281,7 +282,8 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
                   color: isSender
                       ? const Color(0xFF1B97F3)
                       : const Color(0xFFE8E8EE),
-                  tail: isLatest(messages, index),
+                  // Only add the tail if the message is the newest
+                  tail: isNewest(index),
                   isSender: isSender,
                   textStyle: TextStyle(
                     color: isSender ? Colors.white : Colors.black,
@@ -292,7 +294,66 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
             );
           },
         );
+
       },
     );
   }
+
+  Widget _buildChatHeader(BuildContext context, String userId,  bool isSender) {
+    return StreamBuilder<UserModel>(
+      stream: _auth.getUserById(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (snapshot.hasError) {
+          return Text("Error loading user: ${snapshot.error}");
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Text("User not found");
+        }
+
+        final user = snapshot.data!;
+        CachedNetworkImage(
+          imageUrl: user.imageUrl,
+          placeholder: (context, url) => CircularProgressIndicator(),
+          errorWidget: (context, url, error) => Icon(Icons.error),
+        );
+        return Padding(
+          padding: const EdgeInsets.only(left: 20, top: 10, bottom: 10),
+          child: Row(
+          mainAxisAlignment:
+            isSender ?  MainAxisAlignment.end :  MainAxisAlignment.start,
+            children: [
+              isSender ?
+                  Column(
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: user.imageUrl?.isNotEmpty == true
+                            ? NetworkImage(user.imageUrl!)
+                            : const AssetImage("assets/images/profile.png")
+                        as ImageProvider,
+                        radius: 12,
+                      ),
+                    ],
+                  ) :
+                  CircleAvatar(
+                    backgroundImage: user.imageUrl?.isNotEmpty == true
+                        ? NetworkImage(user.imageUrl!)
+                        : const AssetImage("assets/images/profile.png")
+                    as ImageProvider,
+                    radius: 12,
+                  ),
+                  SizedBox(height: 10, width: 4,),
+                  Text(
+                    user.name,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+            ]
+          ),
+        );
+      },
+    );
+  }
+
 }

@@ -3,6 +3,7 @@ import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/pages/group_chat_page.dart';
 import 'package:chat_app/pages/home_page.dart';
+import 'package:chat_app/pages/profile/profile.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widget/button2.dart';
@@ -23,6 +24,8 @@ class _SavedUserContactState extends State<SavedUserContact> {
   final AuthService _auth = AuthService();
   final ChatService _chat = ChatService();
   String? selectedUserId;
+  String? _chatPageRoomId;
+  String? _groupPageRoomId;
 
   @override
   void initState() {
@@ -42,28 +45,39 @@ class _SavedUserContactState extends State<SavedUserContact> {
       final currentUserId = await AuthService().getCurrentUserId();
 
       List<String> members = [currentUserId, ...userMap];
+      print("Member first ${members.last}");
 
       String roomId = await ChatService().createRoom(
         member: members,
         isGroup: members.length > 2,
       );
+
       if (!mounted) return;
+
+      setState(() {
+        if (members.length > 2) {
+          _groupPageRoomId = roomId;
+        } else {
+          _chatPageRoomId = roomId;
+        }
+      });
 
       if (members.length > 2) {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => GroupChatPage(
-                  members: members,
-                  roomId: roomId,
-              )),
+            builder: (context) => GroupChatPage(
+              members: members,
+              roomId: roomId,
+            ),
+          ),
         );
       } else {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChatPage(
-              receiverId: members.first,
+              receiverId: members.last,
               roomId: roomId,
             ),
           ),
@@ -78,6 +92,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
       );
     }
   }
+
 
   Future<void> _initializeRooms() async {
     try {
@@ -164,7 +179,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
             final roomData = rooms[index].data() as Map<String, dynamic>;
             final room = RoomModel.fromMap(roomData);
             final members = List<String>.from(roomData['members'] ?? []);
-            print("Members: $members");
             final isGroup = members.length > 2;
 
             final receiverId = isGroup
@@ -180,6 +194,7 @@ class _SavedUserContactState extends State<SavedUserContact> {
 
             if (isGroup) {
               return GroupTile(
+                roomId: room.roomId,
                 room: room,
                 onChatTap: () async {
                   final List<String> otherMembers =
@@ -203,13 +218,13 @@ class _SavedUserContactState extends State<SavedUserContact> {
 
                 final user = userSnapshot.data!;
                 return ChatTile(
+                  roomId: room.roomId,
                   user: user,
                   onChatTap: () async {
-                    print("ReceiverId: ${[receiverId]}");
                     await handleCreateRoom([receiverId]);
                   },
                   onProfileTap: () {
-                    _showUserProfile(context, user);
+                    ProfilePage(userId: user.uid);
                   },
                 );
               },
@@ -217,33 +232,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
           },
         );
       },
-    );
-  }
-
-  //Sementara
-  void _showUserProfile(BuildContext context, UserModel user) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(user.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Email: ${user.email}'),
-            Text('Last active: ${user.lastDayActive()}'),
-            if (user.wasRecentlyActive())
-              const Text('Status: Recently active',
-                  style: TextStyle(color: Colors.green)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 }

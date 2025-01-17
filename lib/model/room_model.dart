@@ -3,12 +3,14 @@ class RoomModel {
   final String roomName;
   final List<String> members;
   final String imageUrl;
+  final String roomId;
 
   RoomModel({
     required this.roomType,
     required this.roomName,
     required this.members,
-    required this.imageUrl
+    required this.imageUrl,
+    required this.roomId
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +27,7 @@ class RoomModel {
       roomName: map['roomName'] ?? '',
       members: List<String>.from(map['members'] ?? []),
       imageUrl: map['image'] ?? '',
+      roomId: map['roomId'] ?? '',
     );
   }
 }
