@@ -288,8 +288,8 @@ class _SearchContactState extends State<SearchContact> {
       itemBuilder: (context, index) {
         final roomId = storedRooms[index];
 
-        return FutureBuilder<RoomModel?>(
-          future: ChatService().getRoomById(roomId),
+        return StreamBuilder<RoomModel?>(
+          stream: ChatService().getRoomById(roomId),
           builder: (context, roomSnapshot) {
             if (!roomSnapshot.hasData) {
               return const SizedBox.shrink();

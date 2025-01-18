@@ -55,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
         }
         final currUser = snapshots.data;
         return StreamBuilder<UserModel>(
-          stream: _auth.getUserById(widget.userId!),
+          stream: _auth.getUserById(widget.userId),
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState == ConnectionState.waiting) {
               return Center(
