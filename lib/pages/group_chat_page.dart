@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/model/room_model.dart';
@@ -36,7 +38,6 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
   bool isPageVisible = true;
   bool isAppActive = true;
   List<String>? _members;
-
   late String currentUserId;
 
   @override
@@ -80,6 +81,7 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
     print("Left chat page");
     WidgetsBinding.instance.removeObserver(this);
     messageController.dispose();
+    _roomSubscription?.cancel();
     super.dispose();
   }
 
@@ -106,23 +108,26 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
     });
   }
 
+  StreamSubscription<RoomModel?>? _roomSubscription;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadRoomData();
+    _subscribeToRoomData();
   }
 
-  Future<void> _loadRoomData() async {
-    try {
-      final roomData = await _chat.getRoomById(widget.roomId);
+  void _subscribeToRoomData() {
+    _roomSubscription?.cancel();
+
+    _roomSubscription = _chat.getRoomById(widget.roomId).listen((roomData) {
       if (mounted) {
         setState(() {
           _roomData = roomData;
         });
       }
-    } catch (e) {
-      debugPrint('Error loading room data: $e');
-    }
+    }, onError: (error) {
+      debugPrint('Error loading room data: $error');
+    });
   }
 
   Future<void> handleSendChat() async {

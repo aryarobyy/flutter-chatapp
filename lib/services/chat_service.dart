@@ -163,17 +163,41 @@ class ChatService extends ChangeNotifier {
         .snapshots();
   }
 
-  Future<RoomModel?> getRoomById(String roomId) async {
-    final docSnapshot =
-    await _fireStore.collection(ROOM_COLLECTION).doc(roomId).get();
-
-    if (docSnapshot.exists && docSnapshot.data() != null) {
-      return RoomModel.fromMap(docSnapshot.data() as Map<String, dynamic>);
-    } else {
-      return null;
-    }
+  Stream<RoomModel?> getRoomById(String roomId) {
+    return _fireStore
+        .collection(ROOM_COLLECTION)
+        .doc(roomId)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.exists) {
+        return RoomModel.fromMap(snapshot.data()!);
+      } else {
+        return null;
+      }
+    });
   }
 
+
+
+  Future<RoomModel?> updateRoom(Map<String, dynamic> updatedData, String roomId) async {
+    try{
+      await _fireStore
+          .collection(ROOM_COLLECTION)
+          .doc(roomId)
+          .set(updatedData, SetOptions(merge: true));
+
+      final DocumentSnapshot res = await _fireStore.collection(ROOM_COLLECTION).doc(roomId).get();
+      if (res.exists) {
+        print("Fetched updated user data: ${res.data()}");
+        return RoomModel.fromMap(res.data() as Map<String, dynamic>);
+      } else {
+        print("User document not found after update.");
+        throw Exception("Failed to retrieve updated user data");
+      }
+    } catch(e){
+      print("Error update room $e");
+    }
+  }
 
   Stream<DocumentSnapshot?> streamLatestChat(String userId1, String userId2) {
     return _fireStore
