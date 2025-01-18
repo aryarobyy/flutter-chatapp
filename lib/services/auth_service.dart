@@ -184,14 +184,11 @@ class AuthService {
   Future<UserModel> updateUser(Map<String, dynamic> updatedData) async {
     try {
       final String userId = await getCurrentUserId();
-      print("Attempting to update user with UID: $userId and data: $updatedData");
 
       await _fireStore
           .collection(USER_COLLECTION)
           .doc(userId)
           .set(updatedData, SetOptions(merge: true));
-
-      print("Update successful for UID: $userId");
 
       final DocumentSnapshot userDoc =
       await _fireStore.collection(USER_COLLECTION).doc(userId).get();
