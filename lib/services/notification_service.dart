@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class NotificationService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static StreamSubscription<QuerySnapshot>? _notificationSubscription;
-
+  final AuthService _auth = AuthService();
   static Future<void> initializeNotification() async {
     try {
       await AwesomeNotifications().initialize(
@@ -37,38 +37,61 @@ class NotificationService {
   }
 
   static Future<void> listenToNotifications() async {
-    final currentUserId = await AuthService().getCurrentUserId();
+    try {
+      final currentUserId = await AuthService().getCurrentUserId();
+      if (currentUserId == null) return;
 
-    await _notificationSubscription?.cancel();
+      await _notificationSubscription?.cancel();
 
-    _notificationSubscription = _firestore
-        .collection('chat_notifications')
-        .where('receiverId', isEqualTo: currentUserId)
-        .where('isRead', isEqualTo: false)
-        .snapshots()
-        .listen((snapshot) async {
-      for (var change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          final notification = change.doc.data() as Map<String, dynamic>;
+      _notificationSubscription = _firestore
+          .collection('chat_notifications')
+          .where('receiverId', arrayContains: currentUserId)
+          .where('isRead', isEqualTo: false)
+          .snapshots()
+          .listen((snapshot) async {
+        for (var change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.added) {
+            final notification = change.doc.data() as Map<String, dynamic>;
 
-          await AwesomeNotifications().createNotification(
-            content: NotificationContent(
-              id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
-              channelKey: 'chat_channel',
-              title: notification['title'],
-              body: notification['body'],
-              notificationLayout: NotificationLayout.Default,
-              payload: {
-                'roomId': notification['roomId'],
-                'senderId': notification['senderId'],
-              },
-            ),
-          );
+            if (notification['isRead'] == false) {
+              try {
+                await AwesomeNotifications().createNotification(
+                  content: NotificationContent(
+                    id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+                    channelKey: 'chat_channel',
+                    title: notification['title'],
+                    body: notification['body'],
+                    notificationLayout: NotificationLayout.Default,
+                    payload: {
+                      'roomId': notification['roomId'],
+                      'senderId': notification['senderId'],
+                    },
+                  ),
+                );
 
-          await change.doc.reference.update({'isRead': true});
+                await change.doc.reference.update({'isRead': true});
+              } catch (e) {
+                print("Error showing notification: $e");
+              }
+            }
+          }
         }
-      }
-    });
+      }, onError: (error) {
+        print("Error in notification listener: $error");
+      });
+    } catch (e) {
+      print("Error in listenToNotifications: $e");
+    }
+  }
+
+  static Future<String> _getUserName(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      return userDoc.data()?['name'] ?? 'Unknown User';
+    } catch (e) {
+      print("Error getting user name: $e");
+      return 'Unknown User';
+    }
   }
 
   static Future<void> showNotification({
@@ -79,22 +102,18 @@ class NotificationService {
   }) async {
     try {
       final currentUserId = await AuthService().getCurrentUserId();
-      final senderDoc =
-          await _firestore.collection('users').doc(currentUserId).get();
-      final senderName = senderDoc.data()?['name'] ?? 'Unknown';
 
-      if (currentUserId != receiverIds) {
+      final filteredReceivers = receiverIds.where((id) => id != currentUserId).toList();
+      if (filteredReceivers.isNotEmpty) {
         await _firestore.collection('chat_notifications').add({
-          'title': "Message from $senderName",
+          'title': title,
           'body': message,
           'senderId': currentUserId,
-          'receiverId': receiverIds,
+          'receiverId': filteredReceivers,
           'roomId': roomId,
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,
         });
-
-        print("Notification data saved for receiver");
       }
     } catch (e) {
       print("Error in showNotification: $e");

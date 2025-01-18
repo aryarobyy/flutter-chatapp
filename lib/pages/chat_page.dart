@@ -1,4 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/notification_service.dart';
@@ -38,26 +39,28 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     _chat = Provider.of<ChatService>(context, listen: false);
     _initializeNotifications();
 
-    if (widget.roomId != null) {
+    if (widget.roomId.isNotEmpty) {
       _updateUserChatStatus(true);
-      ChatService.enterChatPage(widget.roomId!);
+      ChatService.enterChatPage(widget.roomId);
     }
+
     AwesomeNotifications().setListeners(
       onActionReceivedMethod: (ReceivedAction receivedAction) async {
         if (receivedAction.payload != null) {
-          String? roomId = receivedAction.payload!['roomId'];
-          if (roomId != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) =>
-                    ChatPage(receiverId: widget.receiverId, roomId: roomId),
+          final roomId = receivedAction.payload?['roomId'];
+          if (roomId != null && context.mounted) {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ChatPage(
+                receiverId: widget.receiverId,
+                roomId: roomId,
               ),
-            );
+            ));
           }
         }
       },
     );
   }
+
 
   @override
   void dispose() {
@@ -98,19 +101,35 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         final currentUserId = await _auth.getCurrentUserId();
         final List<String> members = [currentUserId, widget.receiverId];
 
+        final dataStream = await _auth.getUserById(currentUserId);
+        UserModel? userModel;
+        String username = 'Unknown';
+        await for (final data in dataStream) {
+          userModel = data;
+          break;
+        }
+
+        if (userModel != null) {
+          username = userModel.name;
+        }
+
         await _chat.sendChat(
           message: messageController.text,
           member: members,
         );
 
-        if (widget.receiverId != currentUserId) {
+        final List<String> otherMembers = members.where((id) => id != currentUserId).toList();
+
+        if (otherMembers.isNotEmpty) {
           await NotificationService.showNotification(
-            receiverIds: members,
-            title: "New Message",
+            receiverIds: otherMembers,
+            title: "New Message from $username",
             message: messageController.text,
             roomId: widget.roomId ?? '',
           );
+          print("Notification send");
         }
+
 
         messageController.clear();
       } catch (e) {
@@ -147,7 +166,8 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
 
         final currentUserId = snapshot.data!;
-
+        print("ReceiverIds: ${widget.receiverId}");
+        print("Current: ${currentUserId}");
         return Scaffold(
           appBar: AppBar(
             title: _profileUser(context, widget.receiverId),

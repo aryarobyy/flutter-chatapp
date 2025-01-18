@@ -4,6 +4,7 @@ import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/pages/group_chat_page.dart';
 import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/pages/profile/profile.dart';
+import 'package:chat_app/pages/profile_group_page.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/widget/button2.dart';
@@ -24,8 +25,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
   final AuthService _auth = AuthService();
   final ChatService _chat = ChatService();
   String? selectedUserId;
-  String? _chatPageRoomId;
-  String? _groupPageRoomId;
 
   @override
   void initState() {
@@ -53,15 +52,6 @@ class _SavedUserContactState extends State<SavedUserContact> {
       );
 
       if (!mounted) return;
-
-      setState(() {
-        if (members.length > 2) {
-          _groupPageRoomId = roomId;
-        } else {
-          _chatPageRoomId = roomId;
-        }
-      });
-
       if (members.length > 2) {
         Navigator.push(
           context,
@@ -73,11 +63,15 @@ class _SavedUserContactState extends State<SavedUserContact> {
           ),
         );
       } else {
+        final String otherMember = members.firstWhere(
+              (id) => id != currentUserId,
+          orElse: () => ' ', // Returns null if no other member exists
+        );
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChatPage(
-              receiverId: members.last,
+              receiverId: otherMember,
               roomId: roomId,
             ),
           ),
@@ -201,7 +195,14 @@ class _SavedUserContactState extends State<SavedUserContact> {
                       members.where((id) => id != currentUserId).toList();
                   await handleCreateRoom(otherMembers);
                 },
-                onProfileTap: () async {},
+                onProfileTap: () async {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder:
+                          (context) =>
+                          ProfileGroupPage(roomId: room.roomId,)
+                      )
+                  );
+                },
               );
             }
 
@@ -221,10 +222,17 @@ class _SavedUserContactState extends State<SavedUserContact> {
                   roomId: room.roomId,
                   user: user,
                   onChatTap: () async {
-                    await handleCreateRoom([receiverId]);
+                    final List<String> otherMembers =
+                    members.where((id) => id != currentUserId).toList();
+                    await handleCreateRoom(otherMembers);
                   },
                   onProfileTap: () {
-                    ProfilePage(userId: user.uid);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder:
+                            (context) =>
+                          ProfilePage(userId: user.uid)
+                      )
+                    );
                   },
                 );
               },

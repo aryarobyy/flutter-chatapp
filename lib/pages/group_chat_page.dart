@@ -144,15 +144,27 @@ class _GroupChatPageState extends State<GroupChatPage> with WidgetsBindingObserv
           roomName: _roomData?.roomName,
         );
 
-        if (widget.members != currentUserId) {
-          await NotificationService.showNotification(
-            receiverIds: members,
-            title: "New Message",
-            message: messageController.text,
-            roomId: widget.roomId ?? '',
-          );
-        }
 
+          final dataStream = await _auth.getUserById(currentUserId);
+          UserModel? userModel;
+          String username = 'unknown';
+
+          await for (final data in dataStream) {
+            userModel = data;
+            break;
+          }
+
+          if (userModel != null) {
+            username = userModel.name;
+          }
+          if (widget.members != currentUserId) {
+            await NotificationService.showNotification(
+              receiverIds: members,
+              title: "${_roomData?.roomName ?? 'Group Chat'}",
+              message: "$username: ${messageController.text}",
+              roomId: widget.roomId ?? '',
+            );
+        }
         messageController.clear();
       } catch (e) {
         print("Error in handleSendChat: $e");
