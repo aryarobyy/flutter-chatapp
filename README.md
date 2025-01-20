@@ -61,7 +61,7 @@ A modern cross-platform messaging application built with Flutter, Firebase, and 
 
 ## 📫 Contact
 
-[Your Name]
+Roby Aryanata
 - LinkedIn: https://www.linkedin.com/in/roby-aryanata-6018b0247/
 - GitHub: https://github.com/aryarobyy
 - Email: @robyaryanata2468@gmail.com
