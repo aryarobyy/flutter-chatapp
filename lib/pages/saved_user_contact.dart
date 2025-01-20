@@ -185,6 +185,9 @@ class _SavedUserContactState extends State<SavedUserContact> {
             if ((receiverId == null || receiverId.isEmpty) && !isGroup) {
               return const SizedBox.shrink();
             }
+            if (room.roomId == null || room.roomId!.isEmpty) {
+              throw Exception("roomId cannot be null or empty");
+            }
 
             if (isGroup) {
               return GroupTile(
@@ -218,6 +221,10 @@ class _SavedUserContactState extends State<SavedUserContact> {
                 }
 
                 final user = userSnapshot.data!;
+                if (room.roomId == null || room.roomId!.isEmpty) {
+                  throw Exception("roomId cannot be null or empty");
+                }
+
                 return ChatTile(
                   roomId: room.roomId,
                   user: user,

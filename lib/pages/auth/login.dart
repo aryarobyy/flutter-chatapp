@@ -65,7 +65,7 @@ class _LoginState extends State<Login> {
                         height: 180,
                         child: Image.asset("assets/images/logo.png")),
                     const Text(
-                      "Selamat datang",
+                      "Welcome",
                       style: TextStyle(
                         fontSize: 30,
                       ),

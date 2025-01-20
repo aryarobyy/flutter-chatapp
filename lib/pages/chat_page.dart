@@ -166,8 +166,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
         }
 
         final currentUserId = snapshot.data!;
-        print("ReceiverIds: ${widget.receiverId}");
-        print("Current: ${currentUserId}");
         return Scaffold(
           appBar: AppBar(
             title: _profileUser(context, widget.receiverId),

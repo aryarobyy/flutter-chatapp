@@ -78,7 +78,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Chat App',
       theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
+        primarySwatch: Colors.blue,
+        primaryColor: Colors.lightBlue,
         textTheme: GoogleFonts.robotoTextTheme(
           Theme.of(context).textTheme,
         ),

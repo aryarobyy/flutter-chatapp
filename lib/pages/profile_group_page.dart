@@ -106,12 +106,19 @@ class _ProfileGroupPageState extends State<ProfileGroupPage> {
                 Center(
                   child: Stack(
                     children: [
-                        CircleAvatar(
-                            backgroundImage: data.imageUrl.isNotEmpty
-                                ? NetworkImage(data.imageUrl)
-                                  : const AssetImage("assets/images/profile.png")
-                            as ImageProvider,
-                        radius: 70,
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          color: Colors.lightBlue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage: data.imageUrl.isNotEmpty
+                              ? NetworkImage(data.imageUrl)
+                              : const AssetImage("assets/images/profile.png") as ImageProvider,
+                          radius: 70,
+                        ),
                       ),
                       Positioned(
                     bottom: 3,
@@ -119,7 +126,7 @@ class _ProfileGroupPageState extends State<ProfileGroupPage> {
                     child: Container(
                       width: 50,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
+                        color: Colors.grey[500],
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -273,7 +280,10 @@ class _ProfileGroupPageState extends State<ProfileGroupPage> {
                       leading: CircleAvatar(
                         backgroundImage: user.imageUrl.isNotEmpty
                             ? NetworkImage(user.imageUrl)
-                            : const AssetImage("assets/images/profile.png")
+                            : const AssetImage(
+                            "assets/images/profile.png",
+
+                        )
                         as ImageProvider,
                       ),
                       title: Text(

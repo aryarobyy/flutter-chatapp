@@ -15,7 +15,6 @@ class _UpdateProfileState extends State<UpdateProfile> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
-  String? _currUserId;
 
   @override
   void initState() {
@@ -50,6 +49,8 @@ class _UpdateProfileState extends State<UpdateProfile> {
   }
 
   void handleSubmit() async {
+    final _currUserId = await _auth.getCurrentUserId();
+
     if (_emailController.text.isEmpty ||
         _bioController.text.isEmpty ||
         _nameController.text.isEmpty) {
@@ -57,7 +58,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfilePage(userId: _currUserId as String),
+          builder: (context) => ProfilePage(userId: _currUserId),
         ),
       );
     }
@@ -68,15 +69,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
         return;
       }
 
-      final currentUserId = await _auth.getCurrentUserId();
-      final currentUser = await _auth.getUserById(currentUserId).first;
+      final currentUser = await _auth.getUserById(_currUserId).first;
       final currentName = currentUser.name ?? '';
       final currentEmail = currentUser.email ?? '';
       final currentBio = currentUser.bio ?? '';
-
-      setState(() {
-        _currUserId = currentUserId;
-      });
 
       final uploadData = {
         'name': _nameController.text.trim().isEmpty
@@ -95,7 +91,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfilePage(userId: _currUserId as String),
+          builder: (context) => ProfilePage(userId: _currUserId),
         ),
       );
     } catch (e) {
@@ -177,7 +173,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                           child: Container(
                             width: 50,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
+                              color: Colors.grey[500],
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(

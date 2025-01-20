@@ -99,7 +99,7 @@ class _RegisterState extends State<Register> {
                         height: 180,
                         child: Image.asset("assets/images/logo.png")),
                     const Text(
-                      "Buat Akun",
+                      "Make account",
                       style: TextStyle(
                         fontSize: 30,
                       ),
