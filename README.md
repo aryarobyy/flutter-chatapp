@@ -42,9 +42,6 @@ A modern cross-platform messaging application built with Flutter, Firebase, and 
 - Secure data transmission
 - Scalable backend architecture
 
-## 📱 Screenshots
-
-[Place for your app screenshots]
 
 ## 🎯 Project Goals
 
